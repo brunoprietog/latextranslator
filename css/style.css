@@ -1,0 +1,146 @@
+/*Fuente titulo-top <header> (font-family: 'Exo', sans-serif;)*/
+@import url('https://fonts.googleapis.com/css?family=Exo:800i');
+/*Fuente textos y menu	(font-family: 'Teko', sans-serif;)*/
+@import url('https://fonts.googleapis.com/css?family=Exo:800i|Teko');
+
+h1,h2,h3,h4,h5,h6{
+	font-family: 'Exo', sans-serif;
+}
+
+p{
+	font-family: 'Teko', sans-serif;
+}
+
+body{
+	background-color: #D1E7EA;
+}
+
+.header{
+	width: 100%;
+	height: 60px;
+	background-color: #F0F3BD;
+	position: fixed;
+	top:0;
+	left: 0;
+	z-index: 100;
+}
+
+.latex-icono{
+	float: left;
+	width: 54px;
+	text-align: center;
+	
+}
+
+.top{
+	display: table;
+	width: 98%;
+}
+
+.titulo{
+	float: left;
+	margin:5px;
+	color:#05668D;
+	text-shadow: 2px 2px #02C39A;
+}
+
+.titulo a{
+	text-decoration: none;
+	color:#05668D;
+	cursor:pointer;
+	display: block;
+}
+
+.footer{
+	width: 100%;
+	height: 40px;
+	bottom:0;
+	left: 0;
+	background-color: #05668D;
+	position: fixed;
+	z-index: 100;
+}
+
+.bot{
+	display: block;
+	width: 98%;
+}
+
+.creditos{
+	font-size: 15px;
+	margin:5px;
+	float: left;
+	color:#F0F3BD;
+	text-shadow: 1px 1px #02C39A;
+}
+
+.social{
+	float: right;
+	margin: 0;
+	margin-top: 2px;
+	list-style-type: none;
+}
+
+.icon-facebook-squared{
+	font-size: 40px;
+	color: #F0F3BD;
+	text-align: center;
+	margin: 5px;
+	top:0;
+	padding: 0;
+	text-shadow: 1px 1px #02C39A
+}
+
+.icon-mail{
+	font-size: 40px;
+	color: #F0F3BD;
+	text-align: center;
+	margin: 5px;
+	top:0;
+	padding: 0;
+	text-shadow: 1px 1px #02C39A
+}
+
+.texto-mail{
+	text-decoration: none;
+	float: left;
+	font-size: 22px;
+	margin:5px;
+	color:#F0F3BD;
+	text-shadow: 1px 1px #02C39A;
+}
+
+.texto-mail:hover{
+	color: #02C39A;
+	text-shadow: 1px 1px #F0F3BD;
+}
+
+.icon-facebook-squared:hover{
+	color: #02C39A;
+	text-shadow: 1px 1px #F0F3BD;
+}
+
+.icon-mail:hover{
+	color: #02C39A;
+	text-shadow: 1px 1px #F0F3BD;
+}
+
+@media screen and (min-device-width: 0px) and (max-device-width: 380px){
+	.titulo a{
+		display: none;
+	}
+
+	.latex-icono{
+		float: none;
+		margin-left:40%;
+		margin-right: 0px;
+	}
+
+	.texto-mail{
+		display: none;
+	}
+
+	.creditos{
+		display: none;
+	}
+}

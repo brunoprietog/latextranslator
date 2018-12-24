@@ -1,0 +1,163 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    LIMite
+    PHANTOM
+
+Grammar
+
+Rule 0     S' -> start
+Rule 1     start -> formula
+Rule 2     formula -> math_object
+Rule 3     formula -> concat
+Rule 4     lnbrk -> LINEBREAK
+Rule 5     col -> COL
+Rule 6     concat -> math_object formula
+Rule 7     math_object -> symbol
+Rule 8     math_object -> block
+Rule 9     math_object -> fraction
+Rule 10    math_object -> root
+Rule 11    math_object -> choose
+Rule 12    math_object -> binom
+Rule 13    math_object -> pmod
+Rule 14    math_object -> text
+Rule 15    math_object -> label
+Rule 16    math_object -> array
+Rule 17    math_object -> lnbrk
+Rule 18    math_object -> col
+Rule 19    block -> BEGINBLOCK formula ENDBLOCK
+Rule 20    math_object -> ACCENT block
+Rule 21    math_object -> ACCENT symbol
+Rule 22    math_object -> OVERSET argument argument
+Rule 23    math_object -> UNDERSET argument argument
+Rule 24    math_object -> STYLE block
+Rule 25    math_object -> STYLE symbol
+Rule 26    math_object -> math_object simple_scripted
+Rule 27    math_object -> math_object compound_scripted
+Rule 28    argument -> symbol
+Rule 29    argument -> block
+Rule 30    script -> symbol
+Rule 31    script -> block
+Rule 32    script -> fraction
+Rule 33    script -> root
+Rule 34    script -> binom
+Rule 35    script -> pmod
+Rule 36    script -> text
+Rule 37    simple_scripted -> SUP script
+Rule 38    simple_scripted -> SUB script
+Rule 39    compound_scripted -> SUP script SUB script
+Rule 40    compound_scripted -> SUB script SUP script
+Rule 41    symbol -> LIM
+Rule 42    symbol -> UNKNOWN
+Rule 43    symbol -> MOD
+Rule 44    symbol -> !
+Rule 45    symbol -> NOT
+Rule 46    symbol -> KNOT
+Rule 47    symbol -> USER
+Rule 48    symbol -> ORD
+Rule 49    symbol -> NUM
+Rule 50    symbol -> CHAR
+Rule 51    symbol -> LARGEOP
+Rule 52    symbol -> BINOP
+Rule 53    symbol -> KBINOP
+Rule 54    symbol -> KBINREL
+Rule 55    symbol -> BINREL
+Rule 56    symbol -> FUNC
+Rule 57    symbol -> ARROW
+Rule 58    symbol -> DELIMITER
+Rule 59    symbol -> kdelimiter
+Rule 60    symbol -> DOTS
+Rule 61    kdelimiter -> KDELIMITER
+Rule 62    kdelimiter -> [
+Rule 63    kdelimiter -> ]
+Rule 64    fraction -> FRAC argument argument
+Rule 65    root -> sqr_root
+Rule 66    root -> indexed_root
+Rule 67    sqr_root -> ROOT argument
+Rule 68    indexed_root -> ROOT root_index argument
+Rule 69    root_index -> [ argument ]
+Rule 70    choose -> formula CHOOSE formula
+Rule 71    binom -> BINOM argument argument
+Rule 72    pmod -> PMOD argument
+Rule 73    text -> TEXT TCHAR
+Rule 74    text -> TEXT ANYTHING
+Rule 75    label -> LABEL
+Rule 76    array -> BEGARRAY start ENDARRAY
+
+Terminals, with rules where they appear
+
+!                    : 44
+ACCENT               : 20 21
+ANYTHING             : 74
+ARROW                : 57
+BEGARRAY             : 76
+BEGINBLOCK           : 19
+BINOM                : 71
+BINOP                : 52
+BINREL               : 55
+CHAR                 : 50
+CHOOSE               : 70
+COL                  : 5
+DELIMITER            : 58
+DOTS                 : 60
+ENDARRAY             : 76
+ENDBLOCK             : 19
+FRAC                 : 64
+FUNC                 : 56
+KBINOP               : 53
+KBINREL              : 54
+KDELIMITER           : 61
+KNOT                 : 46
+LABEL                : 75
+LARGEOP              : 51
+LIMite               : 
+LINEBREAK            : 4
+MOD                  : 43
+NOT                  : 45
+NUM                  : 49
+ORD                  : 48
+OVERSET              : 22
+PHANTOM              : 
+PMOD                 : 72
+ROOT                 : 67 68
+STYLE                : 24 25
+SUB                  : 38 39 40
+SUP                  : 37 39 40
+TCHAR                : 73
+TEXT                 : 73 74
+UNDERSET             : 23
+UNKNOWN              : 42
+USER                 : 47
+[                    : 62 69
+]                    : 63 69
+error                : 
+
+Nonterminals, with rules where they appear
+
+LIM                  : 41
+argument             : 22 22 23 23 64 64 67 68 69 71 71 72
+array                : 16
+binom                : 12 34
+block                : 8 20 24 29 31
+choose               : 11
+col                  : 18
+compound_scripted    : 27
+concat               : 3
+formula              : 1 6 19 70 70
+fraction             : 9 32
+indexed_root         : 66
+kdelimiter           : 59
+label                : 15
+lnbrk                : 17
+math_object          : 2 6 26 27
+pmod                 : 13 35
+root                 : 10 33
+root_index           : 68
+script               : 37 38 39 39 40 40
+simple_scripted      : 26
+sqr_root             : 65
+start                : 76 0
+symbol               : 7 21 25 28 30
+text                 : 14 36
+
