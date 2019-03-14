@@ -9,4 +9,5 @@ __pycache__/
 # virtualenv
 .venv/
 venv/
-ENV/
+ENV/debug.log
+debug.log
