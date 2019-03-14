@@ -11,3 +11,4 @@ __pycache__/
 venv/
 ENV/debug.log
 debug.log
+debug.log
