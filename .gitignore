@@ -12,3 +12,6 @@ venv/
 ENV/debug.log
 debug.log
 debug.log
+
+*.tex
+*.txt
