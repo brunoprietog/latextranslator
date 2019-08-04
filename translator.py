@@ -4,13 +4,21 @@ import blindtex
 from blindtex import tex2all
 import codecs
 
-#Funciones de transformación de texto básico.
+basura = open('/mnt/d/latextranslator/basura.json', 'r+', encoding='utf-8')
+limpiar=''
+while True:
+	lines = basura.readlines()
+	if not lines: break
+	for line in lines: limpiar+=line
+basura.close()
+limpiar=eval(limpiar)
 
 numeracion={
 	'2': ('0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'),
 	'3': ('0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX')
 }
 
+#Funciones de transformación de texto básico.
 #Transforma el Archivo en un string y quíta lo que está antes de \begin{document} y lo siguiente a \end{document}
 def string(nombre_archivo, hijo):
 	archivo = open(nombre_archivo, 'r+', encoding='utf-8')
@@ -332,15 +340,6 @@ def titulos(codigo):
 	return codigo
 
 #Elimina código de formato y otros en el archivo, para que estos no se muestren en el texto final
-basura = open('/mnt/d/latextranslator/traduccion/Basura.json', 'r+', encoding='utf-8')
-limpiar=''
-while True:
-	lines = basura.readlines()
-	if not lines: break
-	for line in lines: limpiar+=line
-basura.close()
-limpiar=eval(limpiar)
-
 def limpiar_basura(codigo):
 	for i in limpiar['delimitadores']: codigo=codigo.replace(i[0], i[1])
 	codigo = re.sub(r'\{\\large *(?P<texto>.*)\}', r'\g<texto>', codigo)
