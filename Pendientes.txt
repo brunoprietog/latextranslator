@@ -3,3 +3,4 @@ Secciones
 Combinatoria
 Simplificar fracciones simples
 Ordenar el preánbulo
+Algorithmic

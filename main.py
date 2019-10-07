@@ -15,6 +15,7 @@ for i in ArchivosHijos:
 codigo = tl.graficos(codigo)
 codigo = tl.formulas(codigo)
 codigo = tl.titulos(codigo)
+codigo = tl.enumeracion(codigo)
 codigo = tl.limpiar_basura(codigo)
 tl.traducido(codigo, tl.nombre_final(nombre_archivo)+' traducido.txt')
 print ("Traducido correctamente")
