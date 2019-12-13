@@ -2,5 +2,5 @@ Tablas
 Secciones
 Combinatoria
 Simplificar fracciones simples
-Ordenar el preánbulo
+Ordenar el preámbulo
 Algorithmic
