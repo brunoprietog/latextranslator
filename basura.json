@@ -6,16 +6,20 @@
 		("\\end{block}", ""),
 		("\\begin{center}", ""),
 		("\\end{center}", ""),
+		('\\begin{flushright}', ''),
+		('\\end{flushright}', ''),
+		('\\end{multicols}', ''),
+		("\\frame[allowframebreaks]", ""),
+		("\\unboldmath", ""),
+		("\\boldmath", "")
+	),
+	'enumeracion': (
 		("\\begin{itemize}", ""),
 		("\\begin{enumerate}", ""),
 		("\\begin{description}", ""),
 		("\\end{itemize}", ""),
 		("\\end{enumerate}", ""),
-		("\\end{description}", ""),
-		('\\begin{flushright}', ''),
-		('\\end{flushright}', ''),
-		('\\end{multicols}', ''),
-		("\\frame[allowframebreaks]", "")
+		("\\end{description}", "")
 	),
 	'simples': (
 		("\\titlepage", ""),
@@ -36,7 +40,9 @@
 		('\\bf', ''),
 		('\\sf', ''),
 		('\\frame{}', ''),
+		('\\noindent', ''),
 		('\\;', ' '),
+		('\\hline', ''),
 		('\\\\', '\n')
 	),
 	'acentos': (

@@ -1,0 +1,45 @@
+{
+	'simbolos': (
+		('\\:', 'blindtexespacioblindtex', ' '),
+		('\\;', 'blindtexespacioblindtex', ' '),
+		('\\,', 'blindtexespacioblindtex', ' '),
+		('\%', 'blindtexporcientoblindtex', '%'),
+		('|', 'blindtexbarraverticalblindtex', '|'),
+		('#', 'blindtexsignonumeroblindtex', '#'),
+		('\\therefore', 'blindtexthereforeblindtex', '∴'),
+		('\\varnothing', 'blindtexvarnothingblindtex', '∅'),
+		('\\veebar', 'blindtexveebarblindtex', '⊻'),
+		('~', 'blindtextildeblindtex', '~'),
+		('?', 'blindtexcierrainterrogacionblindtex', '?'),
+		('¿', 'blindtexabreinterrogacionblindtex', '¿'),
+		('á', 'blindtexatildeblindtex', 'á'),
+		('é', 'blindtexetildeblindtex', 'é'),
+		('í', 'blindtexitildeblindtex', 'í'),
+		('ó', 'blindtexotildeblindtex', 'ó'),
+		('ú', 'blindtexutildeblindtex', 'ú')
+	),
+	'reemplazos': (
+		('\\[', '['),
+		('−', '-'),
+		('\\lbrack', '['),
+		('\\lbrace', '\\{'),
+		('\\rbrace', '\\}'),
+		('\\rbrack', ']'),
+		('\\mapsto', '\\rightarrow'),
+		('\\\\', '\\\\blindtexlinea')
+	),
+	'basura': (
+		'\\ ',
+		'_{}',
+		'^{}',
+		'\\pause',
+		'\\medskip',
+		'\\bigskip',
+		'\\smallskip',
+		'\\displaystyle',
+		'\\limits',
+		'\\rm ',
+		'\\end{aligned}',
+		'\n'
+	)
+}

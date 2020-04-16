@@ -3,8 +3,9 @@ import re
 import blindtex
 from blindtex import tex2all
 import codecs
+import config as conf
 
-basura = open('/mnt/d/latextranslator/basura.json', 'r+', encoding='utf-8')
+basura = open(conf.basura, 'r+', encoding='utf-8')
 limpiar=''
 while True:
 	lines = basura.readlines()
@@ -12,6 +13,15 @@ while True:
 	for line in lines: limpiar+=line
 basura.close()
 limpiar=eval(limpiar)
+
+translations = open(conf.translations, 'r+', encoding='utf-8')
+reemplazar=''
+while True:
+	lines = translations.readlines()
+	if not lines: break
+	for line in lines: reemplazar+=line
+translations.close()
+reemplazar=eval(reemplazar)
 
 numeracion={
 	'2': ('0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'),
@@ -23,10 +33,8 @@ numeracion={
 def string(nombre_archivo, hijo):
 	archivo = open(nombre_archivo, 'r+', encoding='utf-8')
 	codigo = ''
-
 	dentro_documento = False
-	if hijo == True:
-		dentro_documento = 0
+	if hijo == True: dentro_documento = True
 	# cont = list()
 	while True:
 		lines = archivo.readlines()
@@ -35,22 +43,15 @@ def string(nombre_archivo, hijo):
 		teoremas=list()
 		for line in lines:
 			edit_line=line
-			if "\\begin{document}" in line: dentro_documento = 1
-			if "\\title{" in line: dentro_documento = 2
-			if "\\author{" in line: dentro_documento = 2
-			if "\\date{" in line: dentro_documento = 2
-			if "\\fancy{" in line: dentro_documento = 3
-			if "\\end{document}" in line: dentro_documento = 0
-			# print(dentro_documento)
-			# print(line)
-			if dentro_documento == 1 or dentro_documento == 3: 
-				if dentro_documento==3 and ('newcommand' in line or 'newtheorem' in line):
-					patronmacros=re.compile(r'\\r?e?newcommand\{\\(?P<nuevocomando>.*)\}\{\\(?P<comando>.*)\}')
-					patronteoremas=re.compile(r'\\newtheorem\{(?P<nuevoteorema>.*)\}.*\{(?P<teorema>.*)\}')
-					macros+=patronmacros.findall(line)
-					teoremas+=patronteoremas.findall(line)
-					dentro_documento=0
-					continue
+			if dentro_documento == False:
+				if "\\begin{document}" in line: dentro_documento = True
+				if "\\title" in line: dentro_documento = True
+				if "\\author" in line: dentro_documento = True
+				if "\\date" in line: dentro_documento = True
+				if "\\fancy{" in line: dentro_documento = True
+			else:
+				if "\\end{document}" in line: dentro_documento = False
+			if dentro_documento == True:
 				if line.strip() == '':
 					codigo += line
 					continue
@@ -66,9 +67,6 @@ def string(nombre_archivo, hijo):
 							if caracter=='\\': caracter_especial=True
 						edit_line=linea
 				codigo+=edit_line
-			elif dentro_documento == 2:
-				codigo += line
-				dentro_documento = 0
 			else:
 				patronmacros=re.compile(r'\\r?e?newcommand\{\\(?P<nuevocomando>.*)\}\{\\(?P<comando>.*)\}')
 				patronteoremas=re.compile(r'\\newtheorem\{(?P<nuevoteorema>.*)\}.*\{(?P<teorema>.*)\}')
@@ -84,8 +82,9 @@ def string(nombre_archivo, hijo):
 	teoremas.sort(key=len)
 	teoremas.reverse()
 	for macro in macros: codigo=re.sub(r'\\'+macro[0]+'(?P<caracter>[^a-zA-Z])', r'\\'+macro[1]+'\g<caracter>', codigo)
-	for teorema in teoremas: codigo=re.sub(r'\\begin\{'+teorema[0]+'\}(.*\[(?P<teorema>.*)\])*', r''+teorema[1]+': \g<teorema>', codigo)
-	for teorema in teoremas: codigo=codigo.replace('\\end{'+teorema[0]+'}', '')
+	for teorema in teoremas: codigo=re.sub(r'\\begin\{'+teorema[0]+'\}(.*\[(?P<teorema>.*)\])*', r'\n'+teorema[1]+': \g<teorema>', codigo)
+	for teorema in teoremas: codigo=codigo.replace('\\end{'+teorema[0]+'}', '\n')
+	codigo=codigo.replace('\\$', 'blindtexpesoblindtex')
 	return codigo
 
 def busqueda_avanzada(patron, texto, delimitador=0):
@@ -211,78 +210,75 @@ def sub_avanzado(patron, patron_sub, lista, texto):
 		texto=texto.replace(lista[i], re.sub(patron_subear, patron_sub, lista[i]))
 	return texto
 
-#Traduce todas las fórmulas
-
-def formulas(codigo):
-	# global convertidas
-	# convertidas=list()
-	# cont=0
-	codigo=codigo.replace('\\(', '$')
-	codigo=codigo.replace('\\)', '$')
-	codigo=codigo.replace('\\[', '$')
-	codigo=codigo.replace('\\]', '$')
-	#Busca los patrones entre "$"
-	global patron
-	patron= re.compile("\${1,2}(?P<formula>[^\$]*)\${1,2}")
-	#Busca los patrones que comienzan con "begin equation"
-	patron2="\\\\begin\{equation\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{equation\**\}"
-	#Busca los patrones que comienzan con "begin align"
-	patron3="\\\\begin\{align\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{align\**\}"
-	patron4="\\\\begin\{eqnarray\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{eqnarray\**\}"
+def buscar_formulas(codigo, valor):
+	if valor==1: patron= re.compile("\${1,2}[^\$]*\${1,2}")
+	else:
+		patron2="\\\\begin\{equation\**\}[^\n]*\s*.*\s*\\\\end\{equation\**\}"
+		patron3="\\\\begin\{align\**\}[^\n]*\s*.*\s*\\\\end\{align\**\}"
+		patron4="\\\\begin\{eqnarray\**\}[^\n]*\s*.*\s*\\\\end\{eqnarray\**\}"
 	#Crea una lista "forms" con los resultados de las dos busquedas anteriores
-	forms=patron.findall(codigo)+busqueda_avanzada(patron2, codigo)+busqueda_avanzada(patron3, codigo)+busqueda_avanzada(patron4, codigo)
-	if '#symbolab' in codigo:
-		codigo = ''
-		for i in forms:
-			codigo = codigo+'$'+i+'$\n'
+	if valor==1: forms=patron.findall(codigo)
+	else: forms=busqueda_avanzada(patron2, codigo)+busqueda_avanzada(patron3, codigo)+busqueda_avanzada(patron4, codigo)
+	# if '#symbolab' in codigo:
+		# codigo = ''
+		# for i in forms:
+			# codigo = codigo+'$'+i+'$\n'
 	#Se ajusta el formato de la lista de salida
 	forms=set(forms)
 	forms=list(forms)
 	forms.sort(key=len)
 	forms.reverse()
-	
-	#Se comienza con la lectura de los resultados guardados en forms 
-	for i in forms:
+	return forms
+
+def buscar_codigos(codigo):
+	patron="\\\\begin\{verbatim\**\}[^\n]*\s*.*\s*\\\\end\{verbatim\**\}"
+	codes=busqueda_avanzada(patron, codigo)
+	codes=list(codes)
+	codes.sort(key=len)
+	codes.reverse()
+	return codes
+
+def reemplazar_formulas(codigo, formulas, tipo, valor):
+	if valor=='r':
+		cont=1
+		for formula in formulas:
+			codigo=codigo.replace(formula, 'blindtex'+tipo+str(cont)+'blindtex'+tipo)
+			cont+=1
+	elif valor=='w':
+		cont=1
+		for formula in formulas:
+			codigo=codigo.replace('blindtex'+tipo+str(cont)+'blindtex'+tipo, formula)
+			cont+=1
+	return codigo
+
+#Traduce todas las fórmulas
+def traducir_formulas(formulas):
+	# codigo=codigo.replace('\\(', '$')
+	# codigo=codigo.replace('\\)', '$')
+	# codigo=codigo.replace('\\[', '$')
+	# codigo=codigo.replace('\\]', '$')
+	for i in formulas:
+		global patron
+		patron= re.compile("\${1,2}(?P<formula>[^\$]*)\${1,2}")
+		patron2="\\\\begin\{equation\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{equation\**\}"
+		patron3="\\\\begin\{align\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{align\**\}"
+		patron4="\\\\begin\{eqnarray\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{eqnarray\**\}"
+		formula=patron.findall(i)+busqueda_avanzada(patron2, i)+busqueda_avanzada(patron3, i)+busqueda_avanzada(patron4, i)
 		#utiliza blindtex para traducir los patrones encontrados anteriormente, reemplazandolos en el archivo original
 		try:
-			j=i
+			j=formula[0]
 			j=re.sub(r' {2,}', r' ', j)
-			j=j.replace('\\:', 'blindtexespacio')
-			j=j.replace('\%', 'blindtexporciento')
-			j=j.replace('\%', '')
-			j=j.replace('|', 'blindtexbarravertical')
-			j=j.replace('#', 'blindtexsignonumero')
-			j=j.replace('~', 'blindtextilde')
-			j=j.replace('?', 'blindtexcierrainterrogacion')
-			j=j.replace('¿', 'blindtexabreinterrogacion')
-			j=j.replace('\\ ', '')
-			j=j.replace('\\[', '[')
-			j=j.replace('−', '-')
-			j=j.replace('_{}', '')
-			j=j.replace('^{}', '')
-			j=j.replace('\n', 'blindtexlinea')
+			for simbolo in reemplazar['simbolos']: j=j.replace(simbolo[0], simbolo[1])
+			for expresion in reemplazar['basura']: j=j.replace(expresion, '')
+			for expresion in reemplazar['reemplazos']: j=j.replace(expresion[0], expresion[1])
 			j = re.sub(r'\\[a-z]space\{[^\{]*m\}', r'', j)
-			j=j.replace("\\pause", "")
-			j=j.replace("\\medskip", "")
-			j=j.replace("\\bigskip", "")
-			j=j.replace('\\smallskip', '')
-			j=j.replace('\\displaystyle', '')
-			j=j.replace('\\limits', '')
-			j=j.replace('\\lbrack', '[')
-			j=j.replace('\\lbrace', '\\{')
-			j=j.replace('\\rbrace', '\\}')
-			j=j.replace('\\rbrack', ']')
 			j = re.sub(r'\\not *\\in', r'\\notin', j)
-			j=j.replace('\\therefore', 'blindtextherefore')
 			j = re.sub(r'\\math[a-z]*\{(?P<texto>[^\{]*)\}', r'\g<texto>', j)
 			j = re.sub(r'\\bm\{(?P<texto>[^\{]*)\}', r'\g<texto>', j)
 			j = re.sub(r'\\begin\{aligned\}\[[a-z]\]', '', j)
-			j=j.replace('\\end{aligned}', '')
-			j=j.replace('á', 'blindtexatilde')
-			j=j.replace('é', 'blindtexetilde')
-			j=j.replace('í', 'blindtexitilde')
-			j=j.replace('ó', 'blindtexotilde')
-			j=j.replace('ú', 'blindtexutilde')
+			j=sub_avanzado(r'\\vec\{(?P<vector>.*)\}', r'vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec\{.*\}', j, ('{', '}')), j)
+			j=sub_avanzado(r'\\overline\{(?P<overline>.*)\}', r'\neg blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline\\{.*\}', j, ('{', '}')), j)
+			j=re.sub(r'\\.?frac(?P<numerador>[^\{}])(?P<denominador>.)', r'\\frac{\g<numerador>}{\g<denominador>}', j)
 			x=blindtex.tex2all.read_equation(j)
 			x = x.replace("arreglo element1_1 b l i n d t e x l i n e a ","blindtexarregloblindtex")
 			x = re.sub(r'element[0-9]*_1 b l i n d t e x l i n e a ', r'blindtexarreglolineablindtex', x)
@@ -307,41 +303,25 @@ def formulas(codigo):
 			textos.reverse()
 			for texto in textos:
 				texto2=texto.replace('&', 'blindtex&')
-				texto2=texto.replace(' ', 'blindtexespacio')
+				texto2=texto.replace(' ', 'blindtexespacioblindtex')
 				x=x.replace(texto, texto2)
 			x=x.replace(' ', '')
+			x=x.replace(':', ': ')
 			x=x.replace('ç', '')
 			x=x.replace('endtext', '')
 			x=x.replace('linebreak', '')
-			x=x.replace('blindtexespacio', ' ')
-			x=x.replace('blindtexporciento', '%')
-			x=x.replace('blindtexbarravertical', '|')
-			x=x.replace('blindtexsignonumero', '#')
-			x=x.replace('blindtextilde', '~')
-			x=x.replace('blindtexcierrainterrogacion', '?')
-			x=x.replace('blindtexabreinterrogacion', '¿')
-			x=x.replace('blindtexatilde', 'á')
-			x=x.replace('blindtexetilde', 'é')
-			x=x.replace('blindtexitilde', 'í')
-			x=x.replace('blindtexotilde', 'ó')
-			x=x.replace('blindtexutilde', 'ú')
+			x=x.replace('blindtexparentesisblindtex', '(')
+			x=x.replace('blindtexcierraparentesisblindtex', ')')
 			x=x.replace('&', '')
 			x=x.replace('blindtex&', '&')
-			x=x.replace('blindtextherefore', '∴')
+			for simbolo in reemplazar['simbolos']: x=x.replace(simbolo[1], simbolo[2])
 			x=x.replace('blindtexlinea', '\n')
 			x=re.sub(r'\^\((?P<exponente>.)\)', r'^\g<exponente>', x)
 			x=re.sub(r'_\((?P<subindice>.)\)', r'_\g<subindice>', x)
-			codigo=codigo.replace(i, x)
-			# convertidas.append(x)
-			# codigo=codigo.replace(i, 'blindtexformula'+str(cont)+'blindtex')
-			# cont+=1
+			formulas[formulas.index(i)]=x
 		except:
-			# print(i)
-			# convertidas.append(i)
-			# codigo=codigo.replace(i, 'blindtexformula'+str(cont)+'blindtex')
-			# cont+=1
 			pass
-	return codigo
+	return formulas
 
 #Se deshace de los graficos encontrados en el codigo LaTeX
 def graficos(codigo):
@@ -357,6 +337,7 @@ def titulos(codigo):
 	return codigo
 
 def enumeracion(codigo):
+	codigo = re.sub(r'\\item\s*\[(?P<texto>[^\[]*)\]\s*', r'\g<texto>\t', codigo)
 	cont = list()
 	codigo2=''
 	lines_codigo=codigo.split('\n')
@@ -378,12 +359,22 @@ def enumeracion(codigo):
 			cont[-1] += 1
 		codigo2+=line+'\n'
 	codigo=codigo.replace(codigo, codigo2)
+	codigo = re.sub(r'blindtexenumeracion\s*', r'', codigo)
+	codigo = re.sub(r'\\item\s*\[(?P<texto>[^\[]*)\]\s*', r'\g<texto>\t', codigo)
+	codigo = re.sub(r'\\item\s*', r'•\t', codigo)
+	for i in limpiar['enumeracion']: codigo=codigo.replace(i[0], i[1])
 	return codigo
+
+def split_codigo(codigo):
+	codigo_splited=codigo.split('\n')
+	codigo2=''
+	for i in codigo_splited: codigo2+=i.strip()+'\n'
+	return codigo2
 
 #Elimina código de formato y otros en el archivo, para que estos no se muestren en el texto final
 def limpiar_basura(codigo):
-	# print(codigo)
-	for i in limpiar['delimitadores']: codigo=codigo.replace(i[0], i[1])
+	# for i in limpiar['delimitadores']: codigo=codigo.replace(i[0], i[1])
+	codigo=codigo.replace('blindtexpesoblindtex', '$')
 	codigo = re.sub(r'\{\\large *(?P<texto>.*)\}', r'\g<texto>', codigo)
 	codigo = re.sub(r'\{\\LARGE *(?P<texto>.*)\}', r'\g<texto>', codigo)
 	codigo = re.sub(r'\{\\Large *(?P<texto>.*)\}', r'\g<texto>', codigo)
@@ -394,43 +385,36 @@ def limpiar_basura(codigo):
 	codigo = re.sub(r'\\setcounter\{enumi\}\{\d*\}', r'', codigo)
 	codigo = re.sub(r'\\thispagestyle\{.*\}', r'', codigo)
 	codigo = re.sub(r'\\begin\{multicols\}\{\d*\}', r'', codigo)
-	codigo=re.sub(patron, '\g<formula>', codigo)
-	codigo=re.sub("\\\\begin\{equation\**\}[^\n]*\s*", "", codigo)
-	codigo=re.sub("\s*\\\\end\{equation\**\}", "", codigo)
-	codigo=re.sub("\\\\begin\{align\**\}[^\n]*\s*", "", codigo)
-	codigo=re.sub("\s*\\\\end\{align\**\}", "", codigo)
-	codigo=re.sub("\\\\begin\{eqnarray\*?\}[^\n]*\s*", "", codigo)
-	codigo=re.sub("\s*\\\\end\{eqnarray\**\}", "", codigo)
+	# codigo=re.sub(patron, '\g<formula>', codigo)
 	codigo = re.sub(r'\\.space\{[^\{]*m\}', r'', codigo)
-	codigo = re.sub(r'blindtexenumeracion\s*', r'', codigo)
-	codigo = re.sub(r'\\item\s*\[(?P<texto>[^\[]*)\]\s*', r'\g<texto>\t', codigo)
-	codigo = re.sub(r'\\item\s*', r'•\t', codigo)
 	for i in range(5):
 		codigo=sub_avanzado(r'\\only<[\d-]*>\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada('\\\\only<[\d-]*>\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\small\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\small\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\small\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\small\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\fbox\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\fbox\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\fbox\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fbox\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\textbf\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\textbf\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\textbf\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\textbf\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\textsf\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\textsf\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\textsf\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\textsf\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\text\w\w\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\text\w\w\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\text\w\w\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\text\w\w\{.*\}', codigo, ('{', '}')), codigo)
+		# codigo=sub_avanzado(r'\{ *\\textsf\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\textsf\{.*\} *\}', codigo, ('{', '}')), codigo)
+		# codigo=sub_avanzado(r'\\textsf\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\textsf\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\emph\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\emph\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\emph\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\emph\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\hfill\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\hfill\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\hfill\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\hfill\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\fancyhead\[\w\]\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyhead\[\w\]\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\fancyfoot\[\w\]\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyfoot\[\w\]\{.*\}', codigo, ('{', '}')), codigo)
+	codigo=split_codigo(codigo)
+	codigo=re.sub(r'(?P<ecuacion>blindtexecuacion\d+blindtexecuacion)', r'\n\g<ecuacion>\n', codigo)
+	codigo=re.sub(r'\n{2,}', r'blindtexlineasblindtex', codigo)
+	codigo = re.sub(r'(?P<caracter1>[^ \}\\]) *\n *(?P<caracter2>[^ \\])', '\g<caracter1> \g<caracter2>', codigo)
+	codigo=codigo.replace('blindtexlineasblindtex', '\n\n')
+	for i in limpiar['delimitadores']: codigo=codigo.replace(i[0], i[1])
 	for i in limpiar['simples']: codigo=codigo.replace(i[0], i[1])
-	# for i in range(len(convertidas)): codigo=codigo.replace('blindtexformula'+str(i)+'blindtex', convertidas[i])
 	for i in limpiar['acentos']: codigo=codigo.replace(i[0], i[1])
 	codigo=codigo.strip()
-	codigo=re.sub(r'\n (?P<caracter>[^\s])', r'\n\g<caracter>', codigo)
-	codigo=re.sub(r'(?P<caracter>[^\s]) \n', r'\g<caracter>\n', codigo)
-	codigo = re.sub(r'\n +\n', '\n\n', codigo)
-	codigo = re.sub(r'\n\t*\n', '\n\n', codigo)
-	codigo = re.sub(r'^\s+$|(\n\n)+', '\n', codigo)
-	codigo=codigo.replace('\n', '\r\n')
+	# codigo=split_codigo(codigo)
+	# codigo=re.sub(r'\n{4,}', r'\n\n\n', codigo)
+	# codigo=codigo.replace('\n', '\r\n')
 	return codigo
 
 def nombre_final(nombre_archivo):
