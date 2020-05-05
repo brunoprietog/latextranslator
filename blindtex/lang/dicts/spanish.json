@@ -253,7 +253,7 @@
     "nabla":"∇",
     "Re":"parteReal",
     "clubsuit":"trébol",
-    "prime":"prima",
+    "prime":"'",
     "Psi":"psiMayúscula",
     "forall":"∀",
     "ell":"l",
@@ -290,7 +290,7 @@
     "endText": "finTexto",
     "end": "fin",
     "linebreak": "saltoDeLínea",
-    "array": "arreglo",
+    "array": "blindtexarregloblindtex",
     "endArray": "finArreglo",
     "element": "elemento"
 }

@@ -3,22 +3,31 @@
 		('\\:', 'blindtexespacioblindtex', ' '),
 		('\\;', 'blindtexespacioblindtex', ' '),
 		('\\,', 'blindtexespacioblindtex', ' '),
+		('\\quad', 'blindtexespacioblindtex', ' '),
+		('\\qquad', 'blindtexespacioblindtex'*2, ' '),
 		('\%', 'blindtexporcientoblindtex', '%'),
 		('|', 'blindtexbarraverticalblindtex', '|'),
 		('#', 'blindtexsignonumeroblindtex', '#'),
 		('\\therefore', 'blindtexthereforeblindtex', '∴'),
 		('\\varnothing', 'blindtexvarnothingblindtex', '∅'),
+		('\\subseteq', 'blindtexsubseteqblindtex', '⊆'),
 		('\\veebar', 'blindtexveebarblindtex', '⊻'),
+		('\\nexists', 'blindtexnexistsblindtex', '∄'),
 		('~', 'blindtextildeblindtex', '~'),
 		('?', 'blindtexcierrainterrogacionblindtex', '?'),
 		('¿', 'blindtexabreinterrogacionblindtex', '¿'),
 		('á', 'blindtexatildeblindtex', 'á'),
+		('Á', 'blindtexamayusculatildeblindtex', 'Á'),
 		('é', 'blindtexetildeblindtex', 'é'),
+		('É', 'blindtexemayusculatildeblindtex', 'É'),
 		('í', 'blindtexitildeblindtex', 'í'),
+		('Í', 'blindteximayusculatildeblindtex', 'Í'),
 		('ó', 'blindtexotildeblindtex', 'ó'),
-		('ú', 'blindtexutildeblindtex', 'ú')
+		('Ó', 'blindtexomayusculatildeblindtex', 'Ó'),
+		('ú', 'blindtexutildeblindtex', 'ú'),
+		('Ú', 'blindtexumayusculatildeblindtex', 'Ú')
 	),
-	'reemplazos': (
+	'reemplazos_latex': (
 		('\\[', '['),
 		('−', '-'),
 		('\\lbrack', '['),
@@ -26,9 +35,17 @@
 		('\\rbrace', '\\}'),
 		('\\rbrack', ']'),
 		('\\mapsto', '\\rightarrow'),
+		('\\overrightarrow', '\\vec'),
 		('\\\\', '\\\\blindtexlinea')
 	),
-	'basura': (
+	'reemplazos_traduccion': (
+		("^(')", "'"),
+		('( ', "("),
+		(' )', ")"),
+		('{ ', "{"),
+		(' }', "}")
+	),
+	'basura_latex': (
 		'\\ ',
 		'_{}',
 		'^{}',
@@ -38,7 +55,9 @@
 		'\\smallskip',
 		'\\displaystyle',
 		'\\limits',
+		'\\nolimits',
 		'\\rm ',
+		'\\big',
 		'\\end{aligned}',
 		'\n'
 	)

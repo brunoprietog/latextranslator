@@ -81,10 +81,16 @@ def string(nombre_archivo, hijo):
 	teoremas=list(teoremas)
 	teoremas.sort(key=len)
 	teoremas.reverse()
-	for macro in macros: codigo=re.sub(r'\\'+macro[0]+'(?P<caracter>[^a-zA-Z])', r'\\'+macro[1]+'\g<caracter>', codigo)
-	for teorema in teoremas: codigo=re.sub(r'\\begin\{'+teorema[0]+'\}(.*\[(?P<teorema>.*)\])*', r'\n'+teorema[1]+': \g<teorema>', codigo)
-	for teorema in teoremas: codigo=codigo.replace('\\end{'+teorema[0]+'}', '\n')
+	for macro in macros:
+		macro=(macro[0].replace('\\', '\\\\'), macro[1].replace('\\', '\\\\'))
+		codigo=re.sub(r'\\'+macro[0]+'(?P<caracter>[^a-zA-Z])', r'\\'+macro[1]+'\g<caracter>', codigo)
+	for teorema in teoremas:
+		teorema=(teorema[0].replace('\\', '\\\\'), teorema[1].replace('\\', '\\\\'))
+		codigo=re.sub(r'\\begin\{'+teorema[0]+'\}(.*\[(?P<teorema>.*)\])*', r'\n'+teorema[1]+': \g<teorema>\n', codigo)
+		codigo=codigo.replace('\\end{'+teorema[0]+'}', '\n')
+	codigo=codigo.replace('\r\n', '\n')
 	codigo=codigo.replace('\\$', 'blindtexpesoblindtex')
+	for i in limpiar['acentos']: codigo=codigo.replace(i[0], i[1])
 	return codigo
 
 def busqueda_avanzada(patron, texto, delimitador=0):
@@ -269,24 +275,26 @@ def traducir_formulas(formulas):
 			j=formula[0]
 			j=re.sub(r' {2,}', r' ', j)
 			for simbolo in reemplazar['simbolos']: j=j.replace(simbolo[0], simbolo[1])
-			for expresion in reemplazar['basura']: j=j.replace(expresion, '')
-			for expresion in reemplazar['reemplazos']: j=j.replace(expresion[0], expresion[1])
-			j = re.sub(r'\\[a-z]space\{[^\{]*m\}', r'', j)
+			for expresion in reemplazar['basura_latex']: j=j.replace(expresion, '')
+			for expresion in reemplazar['reemplazos_latex']: j=j.replace(expresion[0], expresion[1])
+			j = re.sub(r'\\[a-z]space\{[^\{]*\}', r'', j)
 			j = re.sub(r'\\not *\\in', r'\\notin', j)
 			j = re.sub(r'\\math[a-z]*\{(?P<texto>[^\{]*)\}', r'\g<texto>', j)
 			j = re.sub(r'\\bm\{(?P<texto>[^\{]*)\}', r'\g<texto>', j)
 			j = re.sub(r'\\begin\{aligned\}\[[a-z]\]', '', j)
-			j=sub_avanzado(r'\\vec\{(?P<vector>.*)\}', r'vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec\{.*\}', j, ('{', '}')), j)
-			j=sub_avanzado(r'\\overline\{(?P<overline>.*)\}', r'\neg blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline\\{.*\}', j, ('{', '}')), j)
+			for _ in range(5):
+				j=sub_avanzado(r'\\mathop\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\mathop\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\vec\{(?P<vector>.*)\}', r' vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\overline\{(?P<overline>.*)\}', r'\\neg blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline\{.*\}', j, ('{', '}')), j)
 			j=re.sub(r'\\.?frac(?P<numerador>[^\{}])(?P<denominador>.)', r'\\frac{\g<numerador>}{\g<denominador>}', j)
 			x=blindtex.tex2all.read_equation(j)
-			x = x.replace("arreglo element1_1 b l i n d t e x l i n e a ","blindtexarregloblindtex")
+			x = x.replace("blindtexarregloblindtex element1_1 b l i n d t e x l i n e a ","blindtexarregloblindtex")
 			x = re.sub(r'element[0-9]*_1 b l i n d t e x l i n e a ', r'blindtexarreglolineablindtex', x)
 			x = re.sub(r'element[0-9]*_[0-9]*', r'blindtexarreglocomablindtex', x)
-			if 'blindtexarreglocomablindtex = blindtexarreglocomablindtex' in x:
+			if '=' in x or '<' in x or '>' in x or '≤' in x or '≥' in x:
 				x = x.replace('blindtexarreglolineablindtex', '\n')
-				x = x.replace("blindtexarregloblindtex","")
-				x = x.replace("blindtexarreglocomablindtex","")
+				x = x.replace("blindtexarregloblindtex","blindtexlinea")
+				x = x.replace(" blindtexarreglocomablindtex ","")
 				x = re.sub(r' *(b l i n d t e x l i n e a)* *finArreglo', r'', x)
 				x = re.sub(r'element[0-9]*_1 b l i n d t e x l i n e a finArreglo', r'', x)
 			else:
@@ -315,9 +323,11 @@ def traducir_formulas(formulas):
 			x=x.replace('&', '')
 			x=x.replace('blindtex&', '&')
 			for simbolo in reemplazar['simbolos']: x=x.replace(simbolo[1], simbolo[2])
+			for expresion in reemplazar['reemplazos_traduccion']: x=x.replace(expresion[0], expresion[1])
 			x=x.replace('blindtexlinea', '\n')
 			x=re.sub(r'\^\((?P<exponente>.)\)', r'^\g<exponente>', x)
 			x=re.sub(r'_\((?P<subindice>.)\)', r'_\g<subindice>', x)
+			x=re.sub(r'√\((?P<raiz>.)\)', r'√\g<raiz>', x)
 			formulas[formulas.index(i)]=x
 		except:
 			pass
@@ -325,15 +335,15 @@ def traducir_formulas(formulas):
 
 #Se deshace de los graficos encontrados en el codigo LaTeX
 def graficos(codigo):
-	codigo = re.sub(r"\\includegraphics\[(?P<tiende>.*)\]\{(?P<nombre_grafico>.*)\}", r"#################################################################\n#					  DESCRIBIR GRÁFICO					   #	 NOMBRE DEL GRÁFICO: '  \g<nombre_grafico>  '\n#################################################################\n", codigo)
+	codigo = re.sub(r"\\includegraphics\[(?P<tiende>.*)\]\{(?P<nombre_grafico>.*)\}", r"Gráfico\t\g<nombre_grafico>", codigo)
 	return codigo
 
 #Extrae los titulos del código LaTeX
 def titulos(codigo):
-	codigo = re.sub(r"\\frametitle\{(?P<titulo>.*)\}", r"\g<titulo>", codigo)
-	codigo = re.sub(r"\\framesubtitle\{(?P<titulo>.*)\}", r"\g<titulo>", codigo)
-	codigo = re.sub(r"\\begin\{block\}\{(?P<titulo_bloque>.*)\}", r"\g<titulo_bloque>", codigo)
-	codigo = re.sub(r"\\begin\{frame\}.*\{*(?P<titulo_cuadro>.*)\}*", r"\g<titulo_cuadro>", codigo)
+	codigo = re.sub(r"\\frametitle\{(?P<titulo>.*)\}", r"\g<titulo>\n", codigo)
+	codigo = re.sub(r"\\framesubtitle\{(?P<titulo>.*)\}", r"\g<titulo>\n", codigo)
+	codigo = re.sub(r"\\begin\{block\}\{(?P<titulo_bloque>.*)\}", r"\g<titulo_bloque>\n", codigo)
+	codigo = re.sub(r"\\begin\{frame\}.*\{*(?P<titulo_cuadro>.*)\}*", r"\g<titulo_cuadro>\n", codigo)
 	return codigo
 
 def enumeracion(codigo):
@@ -393,8 +403,8 @@ def limpiar_basura(codigo):
 		codigo=sub_avanzado(r'\\small\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\small\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\fbox\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\fbox\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\fbox\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fbox\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\text\w\w\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\text\w\w\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\text\w\w\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\text\w\w\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\text\w*\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\text\w*\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\text\w*\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\text\w*\{.*\}', codigo, ('{', '}')), codigo)
 		# codigo=sub_avanzado(r'\{ *\\textsf\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\textsf\{.*\} *\}', codigo, ('{', '}')), codigo)
 		# codigo=sub_avanzado(r'\\textsf\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\textsf\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\emph\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\emph\{.*\} *\}', codigo, ('{', '}')), codigo)
@@ -406,11 +416,11 @@ def limpiar_basura(codigo):
 	codigo=split_codigo(codigo)
 	codigo=re.sub(r'(?P<ecuacion>blindtexecuacion\d+blindtexecuacion)', r'\n\g<ecuacion>\n', codigo)
 	codigo=re.sub(r'\n{2,}', r'blindtexlineasblindtex', codigo)
-	codigo = re.sub(r'(?P<caracter1>[^ \}\\]) *\n *(?P<caracter2>[^ \\])', '\g<caracter1> \g<caracter2>', codigo)
+	codigo = re.sub(r'(?P<caracter1>[^\}\\])\n(?P<caracter2>[^\\])', '\g<caracter1> \g<caracter2>', codigo)
 	codigo=codigo.replace('blindtexlineasblindtex', '\n\n')
 	for i in limpiar['delimitadores']: codigo=codigo.replace(i[0], i[1])
 	for i in limpiar['simples']: codigo=codigo.replace(i[0], i[1])
-	for i in limpiar['acentos']: codigo=codigo.replace(i[0], i[1])
+	# for i in limpiar['acentos']: codigo=codigo.replace(i[0], i[1])
 	codigo=codigo.strip()
 	# codigo=split_codigo(codigo)
 	# codigo=re.sub(r'\n{4,}', r'\n\n\n', codigo)

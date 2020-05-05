@@ -5,7 +5,7 @@ Simplificar fracciones simples
 Ordenar el preámbulo
 Algorithmic
 el blindtexpeso
-arreglar fracciones simples
 arreglar el grados
 arreglar llaves lbrace y rbrace
 agregar label
+arreglar viñetas blancas
