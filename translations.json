@@ -1,5 +1,6 @@
 {
 	'simbolos': (
+		('\\\\', 'blindtexlinea', '\n'),
 		('\\:', 'blindtexespacioblindtex', ' '),
 		('\\;', 'blindtexespacioblindtex', ' '),
 		('\\,', 'blindtexespacioblindtex', ' '),
@@ -8,6 +9,7 @@
 		('\%', 'blindtexporcientoblindtex', '%'),
 		('|', 'blindtexbarraverticalblindtex', '|'),
 		('#', 'blindtexsignonumeroblindtex', '#'),
+		('°', 'blindtexgradosblindtex', '°'),
 		('\\therefore', 'blindtexthereforeblindtex', '∴'),
 		('\\varnothing', 'blindtexvarnothingblindtex', '∅'),
 		('\\subseteq', 'blindtexsubseteqblindtex', '⊆'),
@@ -34,11 +36,15 @@
 		('\\lbrace', '\\{'),
 		('\\rbrace', '\\}'),
 		('\\rbrack', ']'),
+		('\\lvert', '|'),
+		('\\vert', '|'),
+		('\\rvert', '|'),
+		('\\colon', ':'),
 		('\\mapsto', '\\rightarrow'),
-		('\\overrightarrow', '\\vec'),
-		('\\\\', '\\\\blindtexlinea')
+		('\\overrightarrow', '\\vec')
 	),
 	'reemplazos_traduccion': (
+		("blindtexpesoblindtex", "$"),
 		("^(')", "'"),
 		('( ', "("),
 		(' )', ")"),

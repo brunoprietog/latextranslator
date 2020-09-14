@@ -4,8 +4,8 @@ Combinatoria
 Simplificar fracciones simples
 Ordenar el preámbulo
 Algorithmic
-el blindtexpeso
-arreglar el grados
 arreglar llaves lbrace y rbrace
 agregar label
 arreglar viñetas blancas
+numeración de newteorems
+arreglar matrices/sistemas de ecuaciones

@@ -17,7 +17,6 @@ for i in ArchivosHijos:
 	codigo = codigo.replace('\\input{'+i+'}', tl.string(j, True))
 codigo = tl.graficos(codigo)
 formulas=tl.buscar_formulas(codigo, 1)
-# print(formulas)
 ecuaciones=tl.buscar_formulas(codigo, 2)
 codigos=tl.buscar_codigos(codigo)
 codigo=tl.reemplazar_formulas(codigo, ecuaciones, 'ecuacion', 'r')
