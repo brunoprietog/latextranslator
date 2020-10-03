@@ -51,35 +51,36 @@ def string(nombre_archivo, hijo):
 	lines=codigo_sucio.split('\n')
 	macros=list()
 	teoremas=list()
-	patronmacros=re.compile(r'^\\r?e?newcommand\{\\(?P<nuevocomando>[^#]*)\}\{\\(?P<comando>[^#]*)\}$')
-	patronteoremas=re.compile(r'^\\newtheorem\{(?P<nuevoteorema>.*)\}.*\{(?P<teorema>.*)\}$')
+	patronmacros=re.compile(r'^\\r?e?newcommand *\{ *\\(?P<nuevocomando>[^#]*) *\} *\{ *\\(?P<comando>[^#]*) *\}$')
+	patronmacros2=re.compile(r'^\\providecommand *\{ *\\(?P<nuevocomando>[^#]*) *\} *\{ *\\(?P<comando>[^#]*) *\}$')
+	patronteoremas=re.compile(r'^\\newtheorem *\{ *(?P<nuevoteorema>.*) *\}.*\{ *(?P<teorema>.*) *\} *$')
 	for line in lines:
 		edit_line=line
-		if dentro_documento == True:
-			if line.strip() == '':
-				codigo += line+'\n'
-				continue
-			elif line.strip()[0] == "%": continue
-			elif line.strip()[0] != "%":
-				if '%' in line:
-					linea=''
-					caracter_especial=False
-					for caracter in line:
-						if caracter_especial==False and caracter=='%': break
-						linea+=caracter
-						if caracter_especial==True: caracter_especial=False
-						if caracter=='\\': caracter_especial=True
-					edit_line=linea
-			if "\\end{document}" in line: break
-			codigo+=edit_line+'\n'
-		else:
+		if dentro_documento == False:
 			if "\\begin{document}" in line: dentro_documento = True
 			if "\\title" in line: dentro_documento = True
 			if "\\author" in line: dentro_documento = True
 			if "\\date" in line: dentro_documento = True
 			if "\\fancy{" in line: dentro_documento = True
 			macros+=patronmacros.findall(line)
+			macros+=patronmacros2.findall(line)
 			teoremas+=patronteoremas.findall(line)
+		if dentro_documento == True:
+			if line.strip() == '':
+				codigo += line+'\n'
+				continue
+			elif line.strip()[0] == "%": continue
+			elif line.strip()[0] != "%" and '%' in line:
+				linea=''
+				caracter_especial=False
+				for caracter in line:
+					if caracter_especial==False and caracter=='%': break
+					linea+=caracter
+					if caracter_especial==True: caracter_especial=False
+					if caracter=='\\': caracter_especial=True
+				edit_line=linea
+			if "\\end{document}" in line: break
+			codigo+=edit_line+'\n'
 	archivo.close()
 	macros=set(macros)
 	macros=list(macros)
@@ -97,13 +98,13 @@ def string(nombre_archivo, hijo):
 		codigo=re.sub(r'\\begin\{'+teorema[0]+'\}(.*\[(?P<teorema>.*)\])*', '\n'+teorema[1]+': \g<teorema>\n', codigo)
 		codigo=codigo.replace('\\end{'+teorema[0]+'}', '\n')
 	codigo=codigo.replace('\r\n', '\n')
-	codigo=codigo.replace('\\\\', 'blindtexlinea\\\\blindtexlinea')
+	codigo=codigo.replace('\\\\', 'blindtexlineablindtex\\\\blindtexlineablindtex')
 	codigo=codigo.replace('\\$', 'blindtexpesoblindtex')
 	codigo=codigo.replace('\\(', '$')
 	codigo=codigo.replace('\\)', '$')
 	codigo=codigo.replace('\\[', '$$')
 	codigo=codigo.replace('\\]', '$$')
-	codigo=codigo.replace('blindtexlinea\\\\blindtexlinea', '\\\\')
+	codigo=codigo.replace('blindtexlineablindtex\\\\blindtexlineablindtex', '\\\\')
 	for i in limpiar['acentos']: codigo=codigo.replace(i[0], i[1])
 	if '#symbolab' in codigo:
 		patron= re.compile("\${1,2}[^\$]*\${1,2}")
@@ -237,15 +238,15 @@ def sub_avanzado(patron, patron_sub, lista, texto):
 	return texto
 
 def buscar_formulas(codigo, valor):
-	if valor==1: patron= re.compile("\${1,1}[^\$]*\${1,1}")
+	if valor==1: patron= re.compile("\${1,1}[^\$]*\${1,1}?", re.M)
 	else:
-		patron= re.compile("\$\$\s*[^\$]*\s*\$\$")
-		patron2="\\\\begin\{equation\**\}[^\n]*\s*.*\s*\\\\end\{equation\**\}"
-		patron3="\\\\begin\{align\**\}[^\n]*\s*.*\s*\\\\end\{align\**\}"
-		patron4="\\\\begin\{eqnarray\**\}[^\n]*\s*.*\s*\\\\end\{eqnarray\**\}"
+		patron= "\$\$\s*.*\s*\$\$"
+		patron2="\\\\begin *\{ *equation *\** *\}[^\n]*\s*.*\s*\\\\end *\{ *equation *\** *\}"
+		patron3="\\\\begin *\{ *align *\** *\}[^\n]*\s*.*\s*\\\\end *\{ *align *\** *\}"
+		patron4="\\\\begin *\{ *eqnarray *\** *\}[^\n]*\s*.*\s*\\\\end *\{ *eqnarray *\** *\}"
 	#Crea una lista "forms" con los resultados de las dos busquedas anteriores
 	if valor==1: forms=patron.findall(codigo)
-	else: forms=patron.findall(codigo)+busqueda_avanzada(patron2, codigo)+busqueda_avanzada(patron3, codigo)+busqueda_avanzada(patron4, codigo)
+	else: forms=busqueda_avanzada(patron, codigo)+busqueda_avanzada(patron2, codigo)+busqueda_avanzada(patron3, codigo)+busqueda_avanzada(patron4, codigo)
 	#Se ajusta el formato de la lista de salida
 	forms=set(forms)
 	forms=list(forms)
@@ -254,7 +255,7 @@ def buscar_formulas(codigo, valor):
 	return forms
 
 def buscar_codigos(codigo):
-	patron="\\\\begin\{verbatim\**\}[^\n]*\s*.*\s*\\\\end\{verbatim\**\}"
+	patron="\\\\begin *\{ *verbatim *\** *\}[^\n]*\s*.*\s*\\\\end *\{ *verbatim *\** *\}"
 	codes=busqueda_avanzada(patron, codigo)
 	codes=list(codes)
 	codes.sort(key=len)
@@ -277,48 +278,60 @@ def reemplazar_formulas(codigo, formulas, tipo, valor):
 #Traduce todas las fórmulas
 def traducir_formulas(formulas):
 	for i in formulas:
-		patron= re.compile("\${1,}(?P<formula>[^\$]*)\${1,}")
-		patron2="\\\\begin\{equation\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{equation\**\}"
-		patron3="\\\\begin\{align\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{align\**\}"
-		patron4="\\\\begin\{eqnarray\**\}[^\n]*\s*(?P<formula>.*)\s*\\\\end\{eqnarray\**\}"
+		patron= re.compile("\${1,1}(?P<formula>[^\$]*)\${1,1}?", re.M)
+		patron2="\\\\begin *\{equation *\** *\}[^\n]*\s*(?P<formula>.*)\s*\\\\end *\{equation *\** *\}"
+		patron3="\\\\begin *\{align *\** *\}[^\n]*\s*(?P<formula>.*)\s*\\\\end *\{ *align *\** *\}"
+		patron4="\\\\begin *\{ *eqnarray *\** *\}[^\n]*\s*(?P<formula>.*)\s*\\\\end *\{ *eqnarray *\** *\}"
 		patron5="\$\$\s*(?P<formula>.*)\s*\$\$"
 		formula=patron.findall(i)+busqueda_avanzada(patron2, i)+busqueda_avanzada(patron3, i)+busqueda_avanzada(patron4, i)+busqueda_avanzada(patron5, i)
+		formula.sort(key=len)
+		formula.reverse()
 		#utiliza blindtex para traducir los patrones encontrados anteriormente, reemplazandolos en el archivo original
 		try:
 			j=formula[0]
 			j=re.sub(r' {2,}', r' ', j)
 			for simbolo in reemplazar['simbolos']: j=j.replace(simbolo[0], simbolo[1])
-			for expresion in reemplazar['basura_latex']: j=j.replace(expresion, '')
 			for expresion in reemplazar['reemplazos_latex']: j=j.replace(expresion[0], expresion[1])
-			j = re.sub(r'\\[a-z]space\{[^\{\}]*\}', r'', j)
+			j = re.sub(r'\\[a-z]space *\{[^\{\}]*\}', r'', j)
 			j = re.sub(r'\\not *\\in', r'\\notin', j)
-			j = re.sub(r'\\math[a-z]*\{(?P<texto>[^\{\}]*)\}', r'\g<texto>', j)
-			j=re.sub(r'\\textnormal\s*\{', r'\\text{', j)
-			j = re.sub(r'\\bm\{(?P<texto>[^\{\}]*)\}', r'\g<texto>', j)
-			j = re.sub(r'\\begin\{aligned\}\[[a-z]\]', '', j)
+			j = re.sub(r'\\math[a-z]+ *\{(?P<texto>[^\{\}]*)\}', r'\g<texto>', j)
+			j=re.sub(r'\\textnormal *\{', r'\\text{', j)
+			j=re.sub(r'\\text[a-z]+ *\{', r'\\text{', j)
+			j = re.sub(r'\\bm *\{(?P<texto>[^\{\}]*)\}', r'\g<texto>', j)
+			j = re.sub(r'\\begin *\{ *aligned *\} *\[[a-z]\]', '', j)
+			j = re.sub(r'\\end *\{ *aligned *\}', '', j)
 			for _ in range(5):
-				j=sub_avanzado(r'\\mathop\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\mathop\{.*\}', j, ('{', '}')), j)
-				j=sub_avanzado(r'\\boxed\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\boxed\{.*\}', j, ('{', '}')), j)
-				j=sub_avanzado(r'\\vec\{(?P<vector>.*)\}', r' vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec\{.*\}', j, ('{', '}')), j)
-				j=sub_avanzado(r'\\overline\{(?P<overline>.*)\}', r'\\neg blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\mathop *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\mathop *\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\boxed *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\boxed *\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\vec *\{(?P<vector>\w)\}', r'\\vec \g<vector>', busqueda_avanzada(r'\\vec *\{\w\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\vec *\{(?P<vector>.*)\}', r' vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec *\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\overline *\{(?P<overline>.*)\}', r'bar blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline *\{.*\}', j, ('{', '}')), j)
+			for expresion in reemplazar['basura_latex']: j=j.replace(expresion, '')
 			j=re.sub(r'\\.?frac(?P<numerador>[^\{}])(?P<denominador>.)', r'\\frac{\g<numerador>}{\g<denominador>}', j)
+			patronmatrices="\\\\begin *\{ *.matrix *\}\s*.+\s*\\\\end *\{ *.matrix *\}"
+			patronmatrices2="\\\\begin *\{ *array *\} *\{ *[\| a-z]* *\}\s*.+\s*\\\\end *\{ *array *\}"
+			lista_matrices=busqueda_avanzada(patronmatrices, j)+busqueda_avanzada(patronmatrices2, j)
+			lista_matrices=set(lista_matrices)
+			lista_matrices=list(lista_matrices)
+			lista_matrices.sort(key=len)
+			lista_matrices.reverse()
+			for matriz in lista_matrices:
+				matriz_arreglada=matriz
+				if ('=' or '\\neq' or '\\ne ' or '<' or '>' or '\\leq' or '\\geq' or '\\le ' or '\\ge ') in matriz:
+					matriz_arreglada=re.sub("\\\\begin\{array\} *\{ *[\| a-z]* *\}\s*", r'blindtexlineablindtex', matriz_arreglada)
+					matriz_arreglada=re.sub("\s*\\\\end\{array\}", r'blindtexlineablindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r'\s*blindtexlineablindtex\s*', r'blindtexlineablindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r' *& *', r'', matriz_arreglada)
+				else:
+					matriz_arreglada=re.sub("\\\\begin *\{ *.matrix *\}\s*", r'blindtexparentesisblindtex\nblindtexparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub("\\\\begin *\{ *array *\} *\{ *[\| a-z]* *\}\s*", r'blindtexparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub("\s*\\\\end *\{ *.matrix *\}", r'blindtexcierraparentesisblindtexblindtexcierraparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub("\s*\\\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r'\s*blindtexlineablindtex\s*', r'blindtexcierraparentesisblindtex,blindtexlineablindtexblindtexparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r' *& *', r',', matriz_arreglada)
+				j=j.replace(matriz, matriz_arreglada)
 			x=blindtex.tex2all.read_equation(j)
-			x = x.replace("blindtexarregloblindtex element1_1 b l i n d t e x l i n e a ","blindtexarregloblindtex")
-			x = re.sub(r'element[0-9]*_1 b l i n d t e x l i n e a ', r'blindtexarreglolineablindtex', x)
-			x = re.sub(r'element[0-9]*_[0-9]*', r'blindtexarreglocomablindtex', x)
-			if '=' in x or '<' in x or '>' in x or '≤' in x or '≥' in x:
-				x = x.replace('blindtexarreglolineablindtex', '\n')
-				x = x.replace("blindtexarregloblindtex","blindtexlinea")
-				x = x.replace("blindtexarreglocomablindtex","")
-				x = re.sub(r' *(b l i n d t e x l i n e a)* *finArreglo', r'', x)
-				x = re.sub(r'element[0-9]*_1 b l i n d t e x l i n e a finArreglo', r'', x)
-			else:
-				x = x.replace('blindtexarreglolineablindtex', '),\n(')
-				x = x.replace("blindtexarregloblindtex","((")
-				x = x.replace("blindtexarreglocomablindtex",",")
-				x = re.sub(r' *(b l i n d t e x l i n e a)* *finArreglo', r'))', x)
-				x = re.sub(r'element[0-9]*_1 b l i n d t e x l i n e a finArreglo', r'))', x)
-			x=x.replace('b l i n d t e x l i n e a', '\n')
+			x=x.replace('b l i n d t e x l i n e a b l i n d t e x', '\n')
 			patrontextos= re.compile("ç(?P<texto>[^ç]*)endtext", re.MULTILINE)
 			textos=patrontextos.findall(x)
 			textos=set(textos)
@@ -350,7 +363,7 @@ def traducir_formulas(formulas):
 
 #Se deshace de los graficos encontrados en el codigo LaTeX
 def graficos(codigo):
-	codigo = re.sub(r"\\includegraphics\[(?P<tiende>.*)\]\{(?P<nombre_grafico>.*)\}", r"Gráfico\t\g<nombre_grafico>", codigo)
+	codigo = re.sub(r"\\includegraphics *\[ *(?P<tiende>.*) *\] *\{ *(?P<nombre_grafico>.*) *\}", r"Gráfico \g<nombre_grafico>", codigo)
 	return codigo
 
 #Extrae los titulos del código LaTeX
@@ -399,33 +412,33 @@ def split_codigo(codigo):
 #Elimina código de formato y otros en el archivo, para que estos no se muestren en el texto final
 def limpiar_basura(codigo):
 	codigo=codigo.replace('blindtexpesoblindtex', '$')
-	codigo = re.sub(r'\{\\large *(?P<texto>.*)\}', r'\g<texto>', codigo)
-	codigo = re.sub(r'\{\\LARGE *(?P<texto>.*)\}', r'\g<texto>', codigo)
-	codigo = re.sub(r'\{\\Large *(?P<texto>.*)\}', r'\g<texto>', codigo)
-	codigo = re.sub(r'\\begin\{textblock\*?\}.*', r'', codigo)
-	codigo = re.sub(r'\\end\{textblock\*?\}', r'', codigo)
-	codigo = re.sub(r'\\begin\{minipage\}.*', r'', codigo)
-	codigo = re.sub(r'\\end\{minipage\}', r'', codigo)
-	codigo = re.sub(r'\\setcounter\{enumi\}\{\d*\}', r'', codigo)
-	codigo = re.sub(r'\\thispagestyle\{.*\}', r'', codigo)
-	codigo = re.sub(r'\\begin\{multicols\}\{\d*\}', r'', codigo)
-	codigo = re.sub(r'\\.space\{[^\{\}]*[a-z]+\}', r'', codigo)
+	codigo = re.sub(r'\{ *\\large *(?P<texto>.*)\}', r'\g<texto>', codigo)
+	codigo = re.sub(r'\{ *\\LARGE *(?P<texto>.*)\}', r'\g<texto>', codigo)
+	codigo = re.sub(r'\{ *\\Large *(?P<texto>.*)\}', r'\g<texto>', codigo)
+	codigo = re.sub(r'\\begin *\{ *textblock *\*? *\}.*', r'', codigo)
+	codigo = re.sub(r'\\end *\{ *textblock *\*? *\}', r'', codigo)
+	codigo = re.sub(r'\\begin *\{ *minipage *\}.*', r'', codigo)
+	codigo = re.sub(r'\\end *\{ *minipage *\}', r'', codigo)
+	codigo = re.sub(r'\\setcounter *\{ *enumi *\} *\{ *\d* *\}', r'', codigo)
+	codigo = re.sub(r'\\thispagestyle *\{.*\}', r'', codigo)
+	codigo = re.sub(r'\\begin *\{ *multicols *\} *\{ *\d* *\}', r'', codigo)
+	codigo = re.sub(r'\\.space *\{[^\{\}]*[a-z]+\}', r'', codigo)
 	for i in range(3):
-		codigo=sub_avanzado(r'\\only<[\d-]*>\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada('\\\\only<[\d-]*>\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\small\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\small\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\small\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\small\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\fbox\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\fbox\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\fbox\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fbox\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\text\w*\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\text\w*\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\text\w*\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\text\w*\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\emph\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\emph\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\emph\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\emph\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\large\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\large\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\large\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\large\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\{ *\\hfill\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\hfill\{.*\} *\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\hfill\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\hfill\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\fancyhead\[\w\]\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyhead\[\w\]\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\fancyfoot\[\w\]\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyfoot\[\w\]\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\only *< *[\d-]* *> *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada('\\\\only *< *[\d-]* *> *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\small *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\small *\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\small *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\small *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\[a-z]box *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\[a-z]box *\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\[a-z]box *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\[a-z]box *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\text\w* *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\text\w* *\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\text\w* *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\text\w* *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\emph *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\emph *\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\emph *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\emph *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\large *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\large *\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\large *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\large *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\{ *\\hfill *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\hfill *\{.*\} *\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\hfill *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\hfill *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\fancyhead *\[ *\w *\] *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyhead *\[ *\w *\] *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\fancyfoot *\[ *\w *\] *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyfoot *\[ *\w *\] *\{.*\}', codigo, ('{', '}')), codigo)
 	codigo=split_codigo(codigo)
 	codigo=re.sub(r'\n{2,}', r'blindtexlineasblindtex', codigo)
 	codigo = re.sub(r'(?P<caracter1>[^\}\\])\n(?P<caracter2>[^\\])', '\g<caracter1> \g<caracter2>', codigo)
@@ -436,14 +449,6 @@ def limpiar_basura(codigo):
 	codigo=codigo.strip()
 	codigo=split_codigo(codigo)
 	return codigo
-
-def nombre_final(nombre_archivo):
-	cont=0
-	final=""
-	for i in nombre_archivo:
-		if cont < len(nombre_archivo)-4: final+=i
-		cont+=1
-	return final
 
 def traducido(codigo, nombre_archivo):
 	final=open(nombre_archivo, 'w')

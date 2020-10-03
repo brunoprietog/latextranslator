@@ -1,12 +1,13 @@
 {
 	'simbolos': (
-		('\\\\', 'blindtexlinea', '\n'),
+		('\\\\', 'blindtexlineablindtex', '\n'),
 		('\\:', 'blindtexespacioblindtex', ' '),
 		('\\;', 'blindtexespacioblindtex', ' '),
 		('\\,', 'blindtexespacioblindtex', ' '),
 		('\\quad', 'blindtexespacioblindtex', ' '),
 		('\\qquad', 'blindtexespacioblindtex'*2, ' '),
 		('\%', 'blindtexporcientoblindtex', '%'),
+		('\\|', 'blindtexbarraverticalblindtexblindtexbarraverticalblindtex', '||'),
 		('|', 'blindtexbarraverticalblindtex', '|'),
 		('#', 'blindtexsignonumeroblindtex', '#'),
 		('°', 'blindtexgradosblindtex', '°'),
@@ -36,7 +37,9 @@
 		('\\lbrace', '\\{'),
 		('\\rbrace', '\\}'),
 		('\\rbrack', ']'),
+		('\\|', '\\Vert'),
 		('\\lvert', '|'),
+		('\\Vert', '||'),
 		('\\vert', '|'),
 		('\\rvert', '|'),
 		('\\colon', ':'),
@@ -45,6 +48,8 @@
 	),
 	'reemplazos_traduccion': (
 		("blindtexpesoblindtex", "$"),
+		("-", "−"),
+		("blindtexvectorblindtex", "⃗"),
 		("^(')", "'"),
 		('( ', "("),
 		(' )', ")"),
@@ -63,8 +68,13 @@
 		'\\limits',
 		'\\nolimits',
 		'\\rm ',
+		'\\Bigg',
+		'\\bigg',
+		'\\Big',
+		'\\mathbb',
+		'\\mathrm',
+		'\\mathcal',
 		'\\big',
-		'\\end{aligned}',
 		'\n'
 	)
 }

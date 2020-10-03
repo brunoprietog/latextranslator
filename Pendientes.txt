@@ -8,4 +8,4 @@ arreglar llaves lbrace y rbrace
 agregar label
 arreglar viñetas blancas
 numeración de newteorems
-arreglar matrices/sistemas de ecuaciones
+revisar langle y rangle, abreángulo/cierraángulo ⟨ ⟩
