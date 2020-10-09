@@ -49,6 +49,7 @@ def string(nombre_archivo, hijo):
 		codigo_sucio = codigo_sucio.replace('\\input{'+i+'}', string(j, True))
 	codigo_sucio = codigo_sucio.replace('\r\n', '\n')
 	lines=codigo_sucio.split('\n')
+	preambulo=''
 	macros=list()
 	teoremas=list()
 	patronmacros=re.compile(r'^\\r?e?newcommand *\{ *\\(?P<nuevocomando>[^#]*) *\} *\{ *\\(?P<comando>[^#]*) *\}$')
@@ -58,13 +59,24 @@ def string(nombre_archivo, hijo):
 		edit_line=line
 		if dentro_documento == False:
 			if "\\begin{document}" in line: dentro_documento = True
-			if "\\title" in line: dentro_documento = True
-			if "\\author" in line: dentro_documento = True
-			if "\\date" in line: dentro_documento = True
-			if "\\fancy{" in line: dentro_documento = True
 			macros+=patronmacros.findall(line)
 			macros+=patronmacros2.findall(line)
 			teoremas+=patronteoremas.findall(line)
+			if line.strip() == '':
+				preambulo += line+'\n'
+				continue
+			elif line.strip()[0] == "%":
+				continue
+			elif line.strip()[0] != "%" and '%' in line:
+				linea=''
+				caracter_especial=False
+				for caracter in line:
+					if caracter_especial==False and caracter=='%': break
+					linea+=caracter
+					if caracter_especial==True: caracter_especial=False
+					if caracter=='\\': caracter_especial=True
+				edit_line=linea
+			preambulo+=edit_line+'\n'
 		if dentro_documento == True:
 			if line.strip() == '':
 				codigo += line+'\n'
@@ -82,6 +94,26 @@ def string(nombre_archivo, hijo):
 			if "\\end{document}" in line: break
 			codigo+=edit_line+'\n'
 	archivo.close()
+	fancyfootr=busqueda_avanzada(r'\\fancyfoot *\[ *[Rr] *\] *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(fancyfootr)==1: codigo=fancyfootr[0]+codigo
+	fancyfootc=busqueda_avanzada(r'\\fancyfoot *\[ *[Cc] *\] *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(fancyfootc)==1: codigo=fancyfootc[0]+codigo
+	fancyfootl=busqueda_avanzada(r'\\fancyfoot *\[ *[Ll] *\] *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(fancyfootl)==1: codigo=fancyfootl[0]+codigo
+	fancyheadr=busqueda_avanzada('\\\\fancyhead *\[ *[Rr] *\] *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(fancyheadr)==1: codigo=fancyheadr[0]+codigo
+	fancyheadc=busqueda_avanzada('\\\\fancyhead *\[ *[Cc] *\] *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(fancyheadc)==1: codigo=fancyheadc[0]+codigo
+	fancyheadl=busqueda_avanzada('\\\\fancyhead *\[ *[Ll] *\] *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(fancyheadl)==1: codigo=fancyheadl[0]+codigo
+	date=busqueda_avanzada(r'\\date *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(date)==1: codigo=date[0]+'\n\n'+codigo
+	author=busqueda_avanzada(r'\\author *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(author)==1: codigo=author[0]+'\n\n'+codigo
+	subtitle=busqueda_avanzada(r'\\subtitle *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(subtitle)==1: codigo=subtitle[0]+'\n\n'+codigo
+	title=busqueda_avanzada(r'\\title *\{(?P<texto>.*)\}', preambulo, ('{', '}'))
+	if len(title)==1: codigo=title[0]+'\n\n'+codigo
 	macros=set(macros)
 	macros=list(macros)
 	macros.sort(key=len)
@@ -113,6 +145,33 @@ def string(nombre_archivo, hijo):
 		for i in forms:
 			codigo = codigo+'$'+i+'$\n'
 	return codigo
+
+def markdown(nombre_archivo):
+	archivo_markdown = open(nombre_archivo, 'r+', encoding='utf-8')
+	codigo_markdown=''
+	while True:
+		lines = archivo_markdown.readlines()
+		if not lines: break
+		for line in lines:
+			if line.strip() == '': codigo_markdown += line+'\n'
+			else: codigo_markdown+=line
+	archivo_markdown.close()
+	codigo_markdown=codigo_markdown.replace('\r\n', '\n')
+	codigo_markdown=codigo_markdown.replace('\\$', 'blindtexpesoblindtex')
+	formulas=buscar_formulas(codigo_markdown, 1)
+	ecuaciones=buscar_formulas(codigo_markdown, 2)
+	codigo_markdown=reemplazar_formulas(codigo_markdown, ecuaciones, 'ecuacion', 'r')
+	codigo_markdown=reemplazar_formulas(codigo_markdown, formulas, 'formula', 'r')
+	codigo_markdown=re.sub(r'(?P<ecuacion>blindtexecuacion\d+blindtexecuacion)', r'\n\n\g<ecuacion>\n\n', codigo_markdown)
+	ecuaciones=traducir_formulas(ecuaciones, True)
+	formulas=traducir_formulas(formulas)
+	codigo_markdown=reemplazar_formulas(codigo_markdown, ecuaciones, 'ecuacion', 'w')
+	codigo_markdown=reemplazar_formulas(codigo_markdown, formulas, 'formula', 'w')
+	codigo_markdown=codigo_markdown.replace('blindtexpesoblindtex', '$')
+	codigo_markdown=re.sub(r'\n{2,}', r'blindtexlineasblindtex', codigo_markdown)
+	codigo_markdown=codigo_markdown.replace('blindtexlineasblindtex', '\n\n')
+	codigo_markdown=codigo_markdown.replace('\n', '\r\n')
+	return codigo_markdown
 
 def busqueda_avanzada(patron, texto, delimitador=0):
 	# Patrón para encontrar grupos en el parámetro que es un patrón
@@ -276,7 +335,7 @@ def reemplazar_formulas(codigo, formulas, tipo, valor):
 	return codigo
 
 #Traduce todas las fórmulas
-def traducir_formulas(formulas):
+def traducir_formulas(formulas, markdown=False):
 	for i in formulas:
 		patron= re.compile("\${1,1}(?P<formula>[^\$]*)\${1,1}?", re.M)
 		patron2="\\\\begin *\{equation *\** *\}[^\n]*\s*(?P<formula>.*)\s*\\\\end *\{equation *\** *\}"
@@ -326,6 +385,7 @@ def traducir_formulas(formulas):
 					matriz_arreglada=re.sub("\\\\begin *\{ *.matrix *\}\s*", r'blindtexparentesisblindtex\nblindtexparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub("\\\\begin *\{ *array *\} *\{ *[\| a-z]* *\}\s*", r'blindtexparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub("\s*\\\\end *\{ *.matrix *\}", r'blindtexcierraparentesisblindtexblindtexcierraparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub("\s*blindtexlineablindtex\s*\\\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub("\s*\\\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub(r'\s*blindtexlineablindtex\s*', r'blindtexcierraparentesisblindtex,blindtexlineablindtexblindtexparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub(r' *& *', r',', matriz_arreglada)
@@ -356,6 +416,14 @@ def traducir_formulas(formulas):
 			x=re.sub(r'\^\((?P<exponente>.)\)', r'^\g<exponente>', x)
 			x=re.sub(r'_\((?P<subindice>.)\)', r'_\g<subindice>', x)
 			x=re.sub(r'√\((?P<raiz>.)\)', r'√\g<raiz>', x)
+			if markdown:
+				x=x.replace('\n', '\\\n')
+				x=x.replace('[', '\\[')
+				x=x.replace(']', '\\]')
+				x=x.replace('{', '\\{')
+				x=x.replace('}', '\\}')
+				x=x.replace('^', '\\^')
+				x=x.replace('_', '\\_')
 			formulas[formulas.index(i)]=x
 		except:
 			pass
@@ -423,8 +491,9 @@ def limpiar_basura(codigo):
 	codigo = re.sub(r'\\thispagestyle *\{.*\}', r'', codigo)
 	codigo = re.sub(r'\\begin *\{ *multicols *\} *\{ *\d* *\}', r'', codigo)
 	codigo = re.sub(r'\\.space *\{[^\{\}]*[a-z]+\}', r'', codigo)
-	for i in range(3):
+	for _ in range(3):
 		codigo=sub_avanzado(r'\\only *< *[\d-]* *> *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada('\\\\only *< *[\d-]* *> *\{.*\}', codigo, ('{', '}')), codigo)
+		codigo=sub_avanzado(r'\\scshape *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\scshape *\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\small *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\small *\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\small *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\small *\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\[a-z]box *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\[a-z]box *\{.*\} *\}', codigo, ('{', '}')), codigo)
@@ -437,13 +506,12 @@ def limpiar_basura(codigo):
 		codigo=sub_avanzado(r'\\large *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\large *\{.*\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\{ *\\hfill *\{(?P<texto>.*)\} *\}', r'\g<texto>', busqueda_avanzada(r'\{ *\\hfill *\{.*\} *\}', codigo, ('{', '}')), codigo)
 		codigo=sub_avanzado(r'\\hfill *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\hfill *\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\fancyhead *\[ *\w *\] *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyhead *\[ *\w *\] *\{.*\}', codigo, ('{', '}')), codigo)
-		codigo=sub_avanzado(r'\\fancyfoot *\[ *\w *\] *\{(?P<texto>.*)\}', r'\g<texto>', busqueda_avanzada(r'\\fancyfoot *\[ *\w *\] *\{.*\}', codigo, ('{', '}')), codigo)
 	codigo=split_codigo(codigo)
 	codigo=re.sub(r'\n{2,}', r'blindtexlineasblindtex', codigo)
 	codigo = re.sub(r'(?P<caracter1>[^\}\\])\n(?P<caracter2>[^\\])', '\g<caracter1> \g<caracter2>', codigo)
 	codigo=re.sub(r'(?P<ecuacion>blindtexecuacion\d+blindtexecuacion)', r'\n\g<ecuacion>\n', codigo)
 	codigo=codigo.replace('blindtexlineasblindtex', '\n\n')
+	codigo=re.sub(r'\\hypertarget *\{[^\{\}]*\} *\{\s*\n*\s*(?P<texto>\\[sub]*section *\{.*\} *\\label *\{.*\}) *\}', r'\g<texto>', codigo)
 	for i in limpiar['delimitadores']: codigo=codigo.replace(i[0], i[1])
 	for i in limpiar['simples']: codigo=codigo.replace(i[0], i[1])
 	codigo=codigo.strip()

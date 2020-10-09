@@ -2,7 +2,6 @@ Tablas
 Secciones
 Combinatoria
 Simplificar fracciones simples
-Ordenar el preámbulo
 Algorithmic
 arreglar llaves lbrace y rbrace
 agregar label
