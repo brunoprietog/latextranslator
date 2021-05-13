@@ -10,7 +10,7 @@ if nombre_archivo[-3:] == '.md':
 elif nombre_archivo[-4:] == '.tex':
 	codigo = tl.string(nombre_archivo, False)
 	#Revisa si hay archivos incrustados en el tex principal para agregarlos a codigo
-	patron = re.compile('\\\input\{(?P<archivo>[^\{]*)\}')
+	patron = re.compile(r'\\input *\{(?P<archivo>[^\{\}#]*)\}')
 	ArchivosHijos = patron.findall(codigo)
 	patron=re.compile(r'\.tex$')
 	for i in ArchivosHijos:

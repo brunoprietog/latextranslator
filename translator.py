@@ -31,7 +31,10 @@ numeracion={
 #Funciones de transformación de texto básico.
 #Transforma el Archivo en un string y quíta lo que está antes de \begin{document} y lo siguiente a \end{document}
 def string(nombre_archivo, hijo):
-	archivo = open(nombre_archivo, 'r+', encoding='utf-8')
+	try:
+		archivo = open(nombre_archivo, 'r+', encoding='utf-8')
+	except:
+		archivo = open(nombre_archivo, 'r+',)
 	codigo_sucio = ''
 	codigo = ''
 	dentro_documento = False
@@ -40,7 +43,7 @@ def string(nombre_archivo, hijo):
 		lines = archivo.readlines()
 		if not lines: break
 		for line in lines: codigo_sucio+=line
-	patron = re.compile('\\\input\{(?P<archivo>[^\{]*)\}')
+	patron = re.compile('\\\input\{(?P<archivo>[^\{\}#]*)\}')
 	ArchivosHijos = patron.findall(codigo_sucio)
 	patron=re.compile(r'\.tex$')
 	for i in ArchivosHijos:
@@ -358,6 +361,7 @@ def traducir_formulas(formulas, markdown=False):
 			j=re.sub(r'\\text[a-z]+ *\{', r'\\text{', j)
 			j = re.sub(r'\\bm *\{(?P<texto>[^\{\}]*)\}', r'\g<texto>', j)
 			j = re.sub(r'\\begin *\{ *aligned *\} *\[[a-z]\]', '', j)
+			j = re.sub(r'\\begin *\{ *aligned *\}', '', j)
 			j = re.sub(r'\\end *\{ *aligned *\}', '', j)
 			for _ in range(5):
 				j=sub_avanzado(r'\\mathop *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\mathop *\{.*\}', j, ('{', '}')), j)
@@ -392,18 +396,20 @@ def traducir_formulas(formulas, markdown=False):
 				j=j.replace(matriz, matriz_arreglada)
 			x=blindtex.tex2all.read_equation(j)
 			x=x.replace('b l i n d t e x l i n e a b l i n d t e x', '\n')
-			patrontextos= re.compile("ç(?P<texto>[^ç]*)endtext", re.MULTILINE)
+			patrontextos= re.compile("ç(?P<texto>[^ç]+)endtext", re.MULTILINE)
 			textos=patrontextos.findall(x)
 			textos=set(textos)
 			textos=list(textos)
 			textos.sort(key=len)
 			textos.reverse()
 			for texto in textos:
+				if texto.strip() == "": continue
 				texto2=texto.replace('&', 'blindtex&')
 				texto2=texto.replace(' ', 'blindtexespacioblindtex')
 				x=x.replace(texto, texto2)
 			x=x.replace(' ', '')
 			x=x.replace(':', ': ')
+			x=x.replace('çendtext', ' ')
 			x=x.replace('ç', '')
 			x=x.replace('endtext', '')
 			x=x.replace('linebreak', '')
