@@ -1,4 +1,4 @@
-{
+basura={
 	'delimitadores': (
 		("\\begin{document}",""),
 		("\\begin{frame}",""),

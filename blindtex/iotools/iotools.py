@@ -1,4 +1,4 @@
-#-*-:coding:utf-8-*-
+# -*-:coding:utf-8-*-
 
 import os
 import copy
@@ -9,8 +9,10 @@ import subprocess
 import sys
 from sys import argv
 import codecs
-#HU1
-#Method to open a file and return its content as a string.
+# HU1
+# Method to open a file and return its content as a string.
+
+
 def openFile(fileName):
     '''This function takes a file a return its content as a string.
             Args:
@@ -23,9 +25,10 @@ def openFile(fileName):
         myFile.close()
         return stringDocument
     except IOError:
-        print("File %s could not be openned."%(fileName))
+        print("File %s could not be openned." % (fileName))
         return ""
-#EndOfFunction
+# EndOfFunction
+
 
 def read_json_file(fileName):
     '''This function takes a file a return its content as a string.
@@ -34,14 +37,14 @@ def read_json_file(fileName):
             Returns:
                     str: The content of the file.'''
     try:
-        with codecs.open(fileName, mode='r', errors='ignore') as myFile:
+        with codecs.open(fileName, encoding='utf-8', mode='r', errors='ignore') as myFile:
             stringDocument = json.load(myFile)
 
     except OSError as err:
         print("OS error: {0}".format(err))
         raise
     except ValueError:
-        print("Could not parser",fileName,"file, please check json syntax.")
+        print("Could not parser", fileName, "file, please check json syntax.")
         raise
     except:
         print("Unexpected error:", sys.exc_info()[0])
@@ -50,9 +53,7 @@ def read_json_file(fileName):
     return stringDocument
 
 
-
-
-#Replace the document containing the LaTeX math with the output of the function seekAndReplace. Write the content in a new file.
+# Replace the document containing the LaTeX math with the output of the function seekAndReplace. Write the content in a new file.
 def replaceAndWrite(contentList, replacedDocument, fileName):
     '''Replace the document containing the LaTeX math with the output of the function seekAndReplace. Write the content in a new file.
             Args:
@@ -62,7 +63,8 @@ def replaceAndWrite(contentList, replacedDocument, fileName):
     newContentList = copy.deepcopy(contentList)
     newContentList[1] = replacedDocument
     try:
-        myFile = open(fileName, 'w')#TODO Check if the file already exits, warn about that and decide if the user wants to replace it.
+        # TODO Check if the file already exits, warn about that and decide if the user wants to replace it.
+        myFile = open(fileName, 'w')
         myFile.write(string.join(newContentList))
         myFile.close()
     except IOError:
@@ -70,7 +72,7 @@ def replaceAndWrite(contentList, replacedDocument, fileName):
         return
 
 
-#EndOfFunction
+# EndOfFunction
 
 def convertToHtml(fileName, biblioName=None):
     '''This function uses LaTeXML to convert a .tex file in a html with accesible math formulas.
@@ -78,66 +80,82 @@ def convertToHtml(fileName, biblioName=None):
                     fileName(str): the name of the .tex file to be processed.
                     (opt)biblioName(str): the name o a .bib file. '''
 
-    noExtensionName = fileName.replace(".tex","")
+    noExtensionName = fileName.replace(".tex", "")
 
     if(biblioName):
-        if(os.name == 'nt'): #i.e is in windows
-            noExtensionBiblio = biblioName.replace(".bib","")
-            subprocess.call(["latexml","--dest=%s.xml"%(noExtensionName),"--quiet",fileName], shell=True)
-            subprocess.call(["latexml", "--dest=%s.xml"%(noExtensionBiblio),"--bibtex", biblioName], shell= True)
-            subprocess.call(["latexmlpost","-dest=%s.xhtml"%(noExtensionName),"--bibliography=%s.xml"%(noExtensionBiblio),noExtensionName+".xml"], shell=True)
-        else: #TODO: Do not repeat
-            noExtensionBiblio = biblioName.replace(".bib","")
-            subprocess.call(["latexml","--dest=%s.xml"%(noExtensionName),"--quiet",fileName])
-            subprocess.call(["latexml", "--dest=%s.xml"%(noExtensionBiblio),"--bibtex", biblioName])
-            subprocess.call(["latexmlpost","-dest=%s.xhtml"%(noExtensionName),"--bibliography=%s.xml"%(noExtensionBiblio),noExtensionName+".xml"])
+        if(os.name == 'nt'):  # i.e is in windows
+            noExtensionBiblio = biblioName.replace(".bib", "")
+            subprocess.call(["latexml", "--dest=%s.xml" %
+                            (noExtensionName), "--quiet", fileName], shell=True)
+            subprocess.call(["latexml", "--dest=%s.xml" %
+                            (noExtensionBiblio), "--bibtex", biblioName], shell=True)
+            subprocess.call(["latexmlpost", "-dest=%s.xhtml" % (noExtensionName),
+                            "--bibliography=%s.xml" % (noExtensionBiblio), noExtensionName+".xml"], shell=True)
+        else:  # TODO: Do not repeat
+            noExtensionBiblio = biblioName.replace(".bib", "")
+            subprocess.call(["latexml", "--dest=%s.xml" %
+                            (noExtensionName), "--quiet", fileName])
+            subprocess.call(["latexml", "--dest=%s.xml" %
+                            (noExtensionBiblio), "--bibtex", biblioName])
+            subprocess.call(["latexmlpost", "-dest=%s.xhtml" % (noExtensionName),
+                            "--bibliography=%s.xml" % (noExtensionBiblio), noExtensionName+".xml"])
     else:
         if(os.name == 'nt'):
-            subprocess.call(["latexml","--dest=%s.xml"%(noExtensionName),"--quiet",fileName], shell = True)#Generates xml file.
-            subprocess.call(["latexmlpost","-dest=%s.xhtml"%(noExtensionName),noExtensionName+".xml"], shell = True)#Generates xhtml file.
+            # Generates xml file.
+            subprocess.call(["latexml", "--dest=%s.xml" %
+                            (noExtensionName), "--quiet", fileName], shell=True)
+            # Generates xhtml file.
+            subprocess.call(["latexmlpost", "-dest=%s.xhtml" %
+                            (noExtensionName), noExtensionName+".xml"], shell=True)
         else:
-            subprocess.call(["latexml","--dest=%s.xml"%(noExtensionName),"--quiet",fileName])#Generates xml file.
-            subprocess.call(["latexmlpost","-dest=%s.xhtml"%(noExtensionName),noExtensionName+".xml"])#Generates xhtml file.
+            # Generates xml file.
+            subprocess.call(["latexml", "--dest=%s.xml" %
+                            (noExtensionName), "--quiet", fileName])
+            # Generates xhtml file.
+            subprocess.call(["latexmlpost", "-dest=%s.xhtml" %
+                            (noExtensionName), noExtensionName+".xml"])
 
 
-#EndOfFunction
+# EndOfFunction
 
-def convertToPdf(filePath,fileName):
+def convertToPdf(filePath, fileName):
     if(os.name == 'nt'):
-        subprocess.call(['pdflatex','-output-directory',filePath, fileName], shell = True)
-        subprocess.call(['pdflatex','-output-directory',filePath, fileName], shell = True)
+        subprocess.call(['pdflatex', '-output-directory',
+                        filePath, fileName], shell=True)
+        subprocess.call(['pdflatex', '-output-directory',
+                        filePath, fileName], shell=True)
     else:
-        subprocess.call(['pdflatex','-output-directory',filePath, fileName])
-        subprocess.call(['pdflatex','-output-directory',filePath, fileName])
+        subprocess.call(['pdflatex', '-output-directory', filePath, fileName])
+        subprocess.call(['pdflatex', '-output-directory', filePath, fileName])
 
 
-#EndOfFunction
+# EndOfFunction
 
-#TODO ¿con alguna extensión o la extensión se da desde afuera?
+# TODO ¿con alguna extensión o la extensión se da desde afuera?
 def writeHtmlFile(htmlString, fileName):
     '''Function to write the html result in a final file.
             Args:
                     htmlString(str): The string with the html content of the final result.
                     fileName(str): The name of the file where the string will be written. '''
     try:
-        htmlFile = open(fileName,'w')
+        htmlFile = open(fileName, 'w')
         htmlFile.write(htmlString)
         htmlFile.close()
     except IOError:
         print('File could not be oppened.')
         return
-#EndOf Function
+# EndOf Function
 
 
-
-#This function works just when a .tex file is being converted.
+# This function works just when a .tex file is being converted.
 def writeTroubles(strfileName, listtroubleFormulas):
     (filePath, name) = os.path.split(strfileName)
     try:
-        registerFile = open(os.path.join(filePath, 'TroubleFormulasOf'+name.replace('.tex','.txt')),'w')
+        registerFile = open(os.path.join(
+            filePath, 'TroubleFormulasOf'+name.replace('.tex', '.txt')), 'w')
         for formula in listtroubleFormulas:
             registerFile.write('I had troubles with:\n'+formula+'\n')
         registerFile.close()
     except IOError:
         return
-#EndOfFunction
+# EndOfFunction

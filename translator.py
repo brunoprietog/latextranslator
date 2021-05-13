@@ -3,25 +3,11 @@ import re
 import blindtex
 from blindtex import tex2all
 import codecs
-import config as conf
+import basura
+import translations
 
-basura = open(conf.basura, 'r+', encoding='utf-8')
-limpiar=''
-while True:
-	lines = basura.readlines()
-	if not lines: break
-	for line in lines: limpiar+=line
-basura.close()
-limpiar=eval(limpiar)
-
-translations = open(conf.translations, 'r+', encoding='utf-8')
-reemplazar=''
-while True:
-	lines = translations.readlines()
-	if not lines: break
-	for line in lines: reemplazar+=line
-translations.close()
-reemplazar=eval(reemplazar)
+limpiar=basura.basura
+reemplazar=translations.translations
 
 numeracion={
 	'2': ('0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'),
@@ -31,10 +17,7 @@ numeracion={
 #Funciones de transformación de texto básico.
 #Transforma el Archivo en un string y quíta lo que está antes de \begin{document} y lo siguiente a \end{document}
 def string(nombre_archivo, hijo):
-	try:
-		archivo = open(nombre_archivo, 'r+', encoding='utf-8')
-	except:
-		archivo = open(nombre_archivo, 'r+',)
+	archivo = open(nombre_archivo, 'r+', encoding='utf-8')
 	codigo_sucio = ''
 	codigo = ''
 	dentro_documento = False
@@ -525,7 +508,7 @@ def limpiar_basura(codigo):
 	return codigo
 
 def traducido(codigo, nombre_archivo):
-	final=open(nombre_archivo, 'w')
+	final=open(nombre_archivo, encoding='utf-8', mode='w')
 	final.write(codigo)
 	final.close()
 
