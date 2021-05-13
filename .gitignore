@@ -12,3 +12,7 @@ venv/
 ENV/debug.log
 debug.log
 debug.log
+
+# build files
+build/
+dist/
