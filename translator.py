@@ -144,6 +144,12 @@ def markdown(nombre_archivo):
 	archivo_markdown.close()
 	codigo_markdown=codigo_markdown.replace('\r\n', '\n')
 	codigo_markdown=codigo_markdown.replace('\\$', 'blindtexpesoblindtex')
+	codigo_markdown=codigo_markdown.replace('\\(', '$')
+	codigo_markdown=codigo_markdown.replace('\\)', '$')
+	codigo_markdown=codigo_markdown.replace('\\[', '$$')
+	codigo_markdown=codigo_markdown.replace('\\]', '$$')
+	codigo_markdown=codigo_markdown.replace('\n$$', '\n```\n')
+	codigo_markdown=codigo_markdown.replace('$$\n', '\n```\n')
 	formulas=buscar_formulas(codigo_markdown, 1)
 	ecuaciones=buscar_formulas(codigo_markdown, 2)
 	codigo_markdown=reemplazar_formulas(codigo_markdown, ecuaciones, 'ecuacion', 'r')
@@ -349,6 +355,7 @@ def traducir_formulas(formulas, markdown=False):
 			for _ in range(5):
 				j=sub_avanzado(r'\\mathop *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\mathop *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\boxed *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\boxed *\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\operatorname *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\operatorname *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\vec *\{(?P<vector>\w)\}', r'\\vec \g<vector>', busqueda_avanzada(r'\\vec *\{\w\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\vec *\{(?P<vector>.*)\}', r' vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\overline *\{(?P<overline>.*)\}', r'bar blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline *\{.*\}', j, ('{', '}')), j)
@@ -380,21 +387,15 @@ def traducir_formulas(formulas, markdown=False):
 			x=blindtex.tex2all.read_equation(j)
 			x=x.replace('b l i n d t e x l i n e a b l i n d t e x', '\n')
 			patrontextos= re.compile("ç(?P<texto>[^ç]+)endtext", re.MULTILINE)
-			textos=patrontextos.findall(x)
-			textos=set(textos)
-			textos=list(textos)
-			textos.sort(key=len)
-			textos.reverse()
-			for texto in textos:
+			for match in patrontextos.finditer(x):
+				texto = x[match.start()+1:match.end()-7]
 				if texto.strip() == "": continue
-				texto2=texto.replace('&', 'blindtex&')
-				texto2=texto.replace(' ', 'blindtexespacioblindtex')
-				x=x.replace(texto, texto2)
+				texto = texto.replace('&', 'blindtex&')
+				texto = texto.replace(' ', 'blindtexespacioblindtex')
+				x = x[:match.start()] + texto + x[match.end():]
 			x=x.replace(' ', '')
 			x=x.replace(':', ': ')
 			x=x.replace('çendtext', ' ')
-			x=x.replace('ç', '')
-			x=x.replace('endtext', '')
 			x=x.replace('linebreak', '')
 			x=x.replace('blindtexparentesisblindtex', '(')
 			x=x.replace('blindtexcierraparentesisblindtex', ')')
