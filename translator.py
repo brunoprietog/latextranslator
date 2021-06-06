@@ -356,6 +356,7 @@ def traducir_formulas(formulas, markdown=False):
 				j=sub_avanzado(r'\\mathop *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\mathop *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\boxed *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\boxed *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\operatorname *\{(?P<dentro>.*)\}', r'\g<dentro>', busqueda_avanzada(r'\\operatorname *\{.*\}', j, ('{', '}')), j)
+				j=sub_avanzado(r'\\intertext *\{(?P<dentro>.*)\}', r'blindtexlineablindtex \\text{\g<dentro>} blindtexlineablindtex', busqueda_avanzada(r'\\intertext *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\vec *\{(?P<vector>\w)\}', r'\\vec \g<vector>', busqueda_avanzada(r'\\vec *\{\w\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\vec *\{(?P<vector>.*)\}', r' vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\overline *\{(?P<overline>.*)\}', r'bar blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline *\{.*\}', j, ('{', '}')), j)
@@ -387,12 +388,18 @@ def traducir_formulas(formulas, markdown=False):
 			x=blindtex.tex2all.read_equation(j)
 			x=x.replace('b l i n d t e x l i n e a b l i n d t e x', '\n')
 			patrontextos= re.compile("ç(?P<texto>[^ç]+)endtext", re.MULTILINE)
+			match_possition = 0
 			for match in patrontextos.finditer(x):
-				texto = x[match.start()+1:match.end()-7]
+				texto = x[match.start()+match_possition+1:match.end()+match_possition-7]
 				if texto.strip() == "": continue
-				texto = texto.replace('&', 'blindtex&')
+				texto = texto.replace('&', 'blindtexampersandblindtex')
 				texto = texto.replace(' ', 'blindtexespacioblindtex')
-				x = x[:match.start()] + texto + x[match.end():]
+				x = x[:match.start()+match_possition] + texto + x[match.end()+match_possition:]
+				diff_match = match.end() - match.start()
+				if len(texto) < diff_match:
+					match_possition -= diff_match - len(texto)
+				elif len(texto) > diff_match:
+					match_possition += len(texto) - diff_match
 			x=x.replace(' ', '')
 			x=x.replace(':', ': ')
 			x=x.replace('çendtext', ' ')
@@ -400,7 +407,7 @@ def traducir_formulas(formulas, markdown=False):
 			x=x.replace('blindtexparentesisblindtex', '(')
 			x=x.replace('blindtexcierraparentesisblindtex', ')')
 			x=x.replace('&', '')
-			x=x.replace('blindtex&', '&')
+			x=x.replace('blindtexampersandblindtex', '&')
 			for simbolo in reemplazar['simbolos']: x=x.replace(simbolo[1], simbolo[2])
 			for expresion in reemplazar['reemplazos_traduccion']: x=x.replace(expresion[0], expresion[1])
 			x=re.sub(r'\^\((?P<exponente>.)\)', r'^\g<exponente>', x)
