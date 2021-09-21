@@ -32,6 +32,7 @@ basura={
 		('\\smallskip', ''),
 		('\\thinspace', ''),
 		('\\small', ''),
+		('\\justifying', ''),
 		("\\pause", ""),
 		("\\quad", ""),
 		("\\qquad", ""),

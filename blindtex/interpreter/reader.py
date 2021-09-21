@@ -128,9 +128,9 @@ def lineal_read_style(node, str_read):
     Returns:
         string: The string with the proper stylr of the mathObject in the linear read. '''
     if(is_simple(node)):
-        return str_read + '%s '%node.style
+        return str_read
     else:
-        return '%s '%node.style + str_read + to_read['end']%node.style
+        return str_read
 #EOF
 
 def lineal_read_superscript(node_script):
