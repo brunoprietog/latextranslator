@@ -69,7 +69,7 @@ translations={
 		'\\displaystyle',
 		'\\limits',
 		'\\nolimits',
-		'\\rm ',
+		'\\rm',
 		'\\rm\n',
 		'\\Bigg',
 		'\\bigg',

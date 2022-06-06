@@ -356,6 +356,11 @@ def traducir_formulas(formulas, markdown=False):
 			j=formula[0]
 			for expresion in reemplazar['basura_latex']:
 				j=j.replace(expresion+" ", ' ')
+				j=j.replace(expresion+"\n", ' ')
+				j=j.replace(expresion+"-", '-')
+				j=j.replace(expresion+"+", '+')
+				j=j.replace(expresion+"^", '^')
+				j=j.replace(expresion+"_", '_')
 				j=j.replace(expresion+"\\", '\\')
 				j=j.replace(expresion+"|", '|')
 			for simbolo in reemplazar['simbolos']: j=j.replace(simbolo[0], simbolo[1])
@@ -380,10 +385,10 @@ def traducir_formulas(formulas, markdown=False):
 				j=sub_avanzado(r'\\vec *\{(?P<vector>\w)\}', r'\\vec \g<vector>', busqueda_avanzada(r'\\vec *\{\w\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\vec *\{(?P<vector>.*)\}', r' vecblindtexparentesisblindtex\g<vector>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\vec *\{.*\}', j, ('{', '}')), j)
 				j=sub_avanzado(r'\\overline *\{(?P<overline>.*)\}', r'bar blindtexparentesisblindtex\g<overline>blindtexcierraparentesisblindtex', busqueda_avanzada(r'\\overline *\{.*\}', j, ('{', '}')), j)
-			j=re.sub(r'\\.?frac(?P<numerador>[^\{}])(?P<denominador>.)', r'\\frac{\g<numerador>}{\g<denominador>}', j)
-			patronmatrices="\\\\begin *\{ *.matrix *\}\s*.+\s*\\\\end *\{ *.matrix *\}"
-			patronmatrices2="\\\\begin *\{ *array *\} *\{ *[\| a-z]* *\}\s*.+\s*\\\\end *\{ *array *\}"
-			lista_matrices=busqueda_avanzada(patronmatrices, j)+busqueda_avanzada(patronmatrices2, j)
+			j=re.sub(r'\\.?frac(?P<numerador>[^\{\}])(?P<denominador>.)', r'\\frac{\g<numerador>}{\g<denominador>}', j)
+			patronmatrices=re.compile(r"\\begin *\{ *.matrix *\}\s*.+?\s*\\end *\{ *.matrix *\}", re.S)
+			patronmatrices2=re.compile(r"\\begin *\{ *array *\} *.*? *\{ *[\| a-z]* *\}\s*.+?\s*\\end *\{ *array *\}", re.S)
+			lista_matrices=patronmatrices.findall(j)+patronmatrices2.findall(j)
 			lista_matrices=set(lista_matrices)
 			lista_matrices=list(lista_matrices)
 			lista_matrices.sort(key=len)
@@ -391,26 +396,23 @@ def traducir_formulas(formulas, markdown=False):
 			for matriz in lista_matrices:
 				matriz_arreglada=matriz
 				if ('=' or '\\neq' or '\\ne ' or '<' or '>' or '\\leq' or '\\geq' or '\\le ' or '\\ge ') in matriz:
-					matriz_arreglada=re.sub("\\\\begin\{array\} *\{ *[\| a-z]* *\}\s*", r'blindtexlineablindtex', matriz_arreglada)
-					matriz_arreglada=re.sub("\s*\\\\end\{array\}", r'blindtexlineablindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\\begin\{array\} *.*? *\{ *[\| a-z]* *\}\s*", r'blindtexlineablindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\s*\\end\{array\}", r'blindtexlineablindtex', matriz_arreglada)
 					matriz_arreglada=re.sub(r'\s*blindtexlineablindtex\s*', r'blindtexlineablindtex', matriz_arreglada)
 					matriz_arreglada=re.sub(r' *& *', r'', matriz_arreglada)
 				else:
-					matriz_arreglada=re.sub("\\\\begin *\{ *.matrix *\}\s*", r'blindtexparentesisblindtex\nblindtexparentesisblindtex', matriz_arreglada)
-					matriz_arreglada=re.sub("\\\\begin *\{ *array *\} *\{ *[\| a-z]* *\}\s*", r'blindtexparentesisblindtex', matriz_arreglada)
-					matriz_arreglada=re.sub("\s*\\\\end *\{ *.matrix *\}", r'blindtexcierraparentesisblindtexblindtexcierraparentesisblindtex', matriz_arreglada)
-					matriz_arreglada=re.sub("\s*blindtexlineablindtex\s*\\\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
-					matriz_arreglada=re.sub("\s*\\\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\\begin *\{ *.matrix *\}\s*", r'blindtexparentesisblindtex\nblindtexparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\\begin *\{ *array *\} *.*? *\{ *[\| a-z]* *\}\s*", r'blindtexparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\s*\\end *\{ *.matrix *\}", r'blindtexcierraparentesisblindtexblindtexcierraparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\s*blindtexlineablindtex\s*\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
+					matriz_arreglada=re.sub(r"\s*\\end *\{ *array *\}", r'blindtexcierraparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub(r'\s*blindtexlineablindtex\s*', r'blindtexcierraparentesisblindtex,blindtexlineablindtexblindtexparentesisblindtex', matriz_arreglada)
 					matriz_arreglada=re.sub(r' *& *', r',', matriz_arreglada)
 				j=j.replace(matriz, matriz_arreglada)
 			j=re.sub(r' {2,10}', r' ', j)
 			j=j.replace('\\ ', '')
 			if j.strip() == "": continue
-			if "var(X)  &   =   & {E}([X-\\mu]^2)" in i: print(i)
-			if "eqnarray" in i: print(j)
 			x=blindtex.tex2all.read_equation(j)
-			if "eqnarray" in i: print(x)
 			x=x.replace('b l i n d t e x l i n e a b l i n d t e x', '\n')
 			patrontextos= re.compile("ç(?P<texto>[^ç]+)endtext", re.MULTILINE)
 			match_possition = 0
@@ -448,7 +450,6 @@ def traducir_formulas(formulas, markdown=False):
 				x=x.replace('_', '\\_')
 			formulas[formulas.index(i)]=x
 		except:
-			print(j)
 			pass
 	return formulas
 
