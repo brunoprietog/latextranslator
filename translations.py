@@ -11,7 +11,7 @@ translations={
 		('|', 'blindtexbarraverticalblindtex', '|'),
 		('#', 'blindtexsignonumeroblindtex', '#'),
 		('°', 'blindtexgradosblindtex', '°'),
-		('\\hdots', 'blindtexhdotsblindtex', '...'),
+		('\\hdots', 'blindtexhdotsblindtex', '⋯'),
 		('\\therefore', 'blindtexthereforeblindtex', '∴'),
 		('\\varnothing', 'blindtexvarnothingblindtex', '∅'),
 		('\\subseteq', 'blindtexsubseteqblindtex', '⊆'),
