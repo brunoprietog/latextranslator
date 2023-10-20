@@ -1,10 +1,10 @@
 import argparse
 import os
 import pkg_resources
-from blindtex.latex2ast import converter
-from blindtex.interpreter import reader
-from blindtex.lang import translator
-from blindtex.iotools import iotools
+from latextranslator.blindtex.latex2ast import converter
+from latextranslator.blindtex.interpreter import reader
+from latextranslator.blindtex.lang import translator
+from latextranslator.blindtex.iotools import iotools
 
 DEFAULT_DICT_PATH = os.path.join("lang", "dicts", "spanish.json")
 

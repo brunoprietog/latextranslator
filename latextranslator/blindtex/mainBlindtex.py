@@ -1,8 +1,8 @@
 #-*-:coding:utf-8-*-
 import blindtex.iotools.iotools
 import blindtex.iotools.stringtools
-from blindtex.iotools.stringtools import troubleFormulas
-from blindtex.converter import parser
+from latextranslator.blindtex.iotools.stringtools import troubleFormulas
+from latextranslator.blindtex.converter import parser
 import argparse
 import os
 import os.path

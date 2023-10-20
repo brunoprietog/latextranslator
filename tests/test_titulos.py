@@ -1,6 +1,4 @@
-import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from translator import titulos
+from latextranslator.translator import titulos
 
 codigo = """
 
@@ -9,11 +7,10 @@ Este es el contenido de la diapositiva 1.
 Este es el contenido de la diapositiva 2.
 """
 
-
-def testing_titulos_1():
+def test_titulos_1():
     assert titulos("\\frametitle{Título de la diapositiva 1}") == "Título de la diapositiva 1\n"
 
-def testing_titulos_2():
+def test_titulos_2():
     assert titulos("\\frametitle{\\frametitle\\frametitle}") == "\\frametitle\\frametitle\n"
 
 # Caso de prueba para '\frametitle'

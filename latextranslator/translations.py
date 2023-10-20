@@ -1,12 +1,13 @@
 translations={
 	'simbolos': (
 		('\\\\', 'blindtexlineablindtex', '\n'),
+		('\\ ', 'blindtexespacioblindtex', ' '),
 		('\\:', 'blindtexespacioblindtex', ' '),
 		('\\;', 'blindtexespacioblindtex', ' '),
 		('\\,', 'blindtexespacioblindtex', ' '),
 		('\\quad', 'blindtexespacioblindtex', ' '),
 		('\\qquad', 'blindtexespacioblindtex'*2, ' '),
-		('\%', 'blindtexporcientoblindtex', '%'),
+		('\\%', 'blindtexporcientoblindtex', '%'),
 		('\\|', 'blindtexbarraverticalblindtexblindtexbarraverticalblindtex', '||'),
 		('|', 'blindtexbarraverticalblindtex', '|'),
 		('#', 'blindtexsignonumeroblindtex', '#'),

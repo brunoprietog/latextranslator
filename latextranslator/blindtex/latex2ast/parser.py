@@ -2,8 +2,8 @@
 
 import ply.lex
 import ply.yacc
-from blindtex.latex2ast import lexer
-from blindtex.latex2ast.math_object import MathObject
+from latextranslator.blindtex.latex2ast import lexer
+from latextranslator.blindtex.latex2ast.math_object import MathObject
 
 tokens = lexer.tokens
 

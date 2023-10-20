@@ -1,7 +1,7 @@
 #-*-:coding:utf-8-*-
-from blindtex.latex2ast import converter
+from latextranslator.blindtex.latex2ast import converter
 #from latex2ast import ast
-from blindtex.interpreter import dictionary
+from latextranslator.blindtex.interpreter import dictionary
 
 to_read = {'simple_superscript' : '^ %s ',
                 'comp_superscript' : '^( %s ) ',

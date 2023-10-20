@@ -1,0 +1,27 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "latextranslator"
+authors = [{name = "Bruno Prieto", email = "brunoprietog@hey.com"}]
+dependencies = [
+    "click",
+    "ply"
+]
+requires-python = ">=3.7"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dynamic = ["version", "description"]
+
+[project.optional-dependencies]
+test = [
+	"pytest"
+]
+
+[project.urls]
+Home = "https://github.com/brunoprietog/latextranslator"
+
+[project.scripts]
+latextranslator = "latextranslator:cli"
