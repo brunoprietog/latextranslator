@@ -1,0 +1,15 @@
+Mi Documento LaTeX
+John Doe
+\today
+\maketitle
+
+\section{Introducción}
+A continuación se presentará la ecuación de Euler.
+
+\section{Ecuación}
+La famosa ecuación de Euler, que relaciona los números e, π y i, se expresa como:
+e^(iπ)+1=0
+Esta ecuación es conocida como la identidad de Euler.
+
+\section{Conclusiones}
+En este documento aprendimos a como escribir la ecuación de Euler.

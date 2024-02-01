@@ -16,3 +16,7 @@ debug.log
 # build files
 build/
 dist/
+
+# Files
+Clase_1.tex
+Matrices.tex
