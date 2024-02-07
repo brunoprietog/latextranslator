@@ -415,10 +415,15 @@ def graficos(codigo):
 
 #Extrae los titulos del código LaTeX
 def titulos(codigo):
+	patron_block = re.compile(r"\\begin *\{ *block *\} *\{(?P<titulo_bloque>.*?)\}(?P<contenido_bloque>.*?)\\end *\{ *block *\}", re.U|re.X|re.S)
+
+	patron_frame = re.compile(r"\\begin *\{ *frame *\} *\{(?P<titulo_cuadro>.*?)\}(?P<contenido_cuadro>.*?)\\end *\{ *frame *\}", re.U|re.X|re.S)
+
 	codigo = re.sub(r"\\frametitle\{(?P<titulo>.*)\}", r"\g<titulo>\n", codigo)
 	codigo = re.sub(r"\\framesubtitle\{(?P<titulo>.*)\}", r"\g<titulo>\n", codigo)
-	codigo = re.sub(r"\\begin\{block\}\{(?P<titulo_bloque>.*)\}", r"\g<titulo_bloque>\n", codigo)
-	codigo = re.sub(r"\\begin\{frame\}.*\{*(?P<titulo_cuadro>.*)\}*", r"\g<titulo_cuadro>\n", codigo)
+	codigo = re.sub(r"\\begin\{block\}\{(?P<titulo_bloque>.*?)\}(?P<contenido_bloque>.*?)\\end\{block\}", r"\g<titulo_bloque>\n\n\g<contenido_bloque>", codigo)
+	codigo = re.sub(patron_block, r"\g<titulo_bloque>\n\g<contenido_bloque>", codigo)
+	codigo = re.sub(patron_frame, r"\g<titulo_cuadro>\n\g<contenido_cuadro>", codigo)
 	return codigo
 
 def enumeracion(codigo):

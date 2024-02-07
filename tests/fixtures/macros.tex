@@ -1,0 +1,14 @@
+\documentclass{article}
+% This is a new command
+\newcommand{\saludo}{\textbf{Hola, mundo!}}
+\newcommand{\despedida}{\textbf{Chao, mundo!}}
+
+\begin{document}
+
+Expansión directa del macro: \saludo
+
+Usando \texttt{\textbackslash expandafter} para expandir el macro en un paso: \expandafter\saludo
+
+Muchas gracias por todo \despedida
+
+\end{document}
